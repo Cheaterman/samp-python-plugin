@@ -88,6 +88,7 @@ void _initAMX(AMX *amx)
 	_createVehicle					= _findNative(amx, "CreateVehicle");
 
 	_delete3DTextLabel				= _findNative(amx, "Delete3DTextLabel");
+	_deletePVar					= _findNative(amx, "DeletePVar");
 	_deletePlayer3DTextLabel		= _findNative(amx, "DeletePlayer3DTextLabel");
 	_destroyMenu					= _findNative(amx, "DestroyMenu");
 	_destroyObject					= _findNative(amx, "DestroyObject");
@@ -128,6 +129,9 @@ void _initAMX(AMX *amx)
 	_getNetworkStats				= _findNative(amx, "GetNetworkStats");
 	_getObjectPos					= _findNative(amx, "GetObjectPos");
 	_getObjectRot					= _findNative(amx, "GetObjectRot");
+	_getPVarFloat					= _findNative(amx, "GetPVarFloat");
+	_getPVarInt					= _findNative(amx, "GetPVarInt");
+	_getPVarString					= _findNative(amx, "GetPVarString");
 	_getPlayerAmmo					= _findNative(amx, "GetPlayerAmmo");
 	_getPlayerAnimationIndex		= _findNative(amx, "GetPlayerAnimationIndex");
 	_getPlayerArmour				= _findNative(amx, "GetPlayerArmour");
@@ -275,6 +279,9 @@ void _initAMX(AMX *amx)
 	_setObjectMaterialText			= _findNative(amx, "SetObjectMaterialText");
 	_setObjectPos					= _findNative(amx, "SetObjectPos");
 	_setObjectRot					= _findNative(amx, "SetObjectRot");
+	_setPVarFloat					= _findNative(amx, "SetPVarFloat");
+	_setPVarInt					= _findNative(amx, "SetPVarInt");
+	_setPVarString					= _findNative(amx, "SetPVarString");
 	_setPlayerAmmo					= _findNative(amx, "SetPlayerAmmo");
 	_setPlayerArmedWeapon			= _findNative(amx, "SetPlayerArmedWeapon");
 	_setPlayerArmour				= _findNative(amx, "SetPlayerArmour");
@@ -418,6 +425,7 @@ amx_function_t _createPlayerObject;
 amx_function_t _createVehicle;
 
 amx_function_t _delete3DTextLabel;
+amx_function_t _deletePVar;
 amx_function_t _deletePlayer3DTextLabel;
 amx_function_t _destroyMenu;
 amx_function_t _destroyObject;
@@ -458,6 +466,9 @@ amx_function_t _getMaxPlayers;
 amx_function_t _getNetworkStats;
 amx_function_t _getObjectPos;
 amx_function_t _getObjectRot;
+amx_function_t _getPVarFloat;
+amx_function_t _getPVarInt;
+amx_function_t _getPVarString;
 amx_function_t _getPlayerAmmo;
 amx_function_t _getPlayerAnimationIndex;
 amx_function_t _getPlayerArmour;
@@ -605,6 +616,9 @@ amx_function_t _setObjectMaterial;
 amx_function_t _setObjectMaterialText;
 amx_function_t _setObjectPos;
 amx_function_t _setObjectRot;
+amx_function_t _setPVarFloat;
+amx_function_t _setPVarInt;
+amx_function_t _setPVarString;
 amx_function_t _setPlayerAmmo;
 amx_function_t _setPlayerArmedWeapon;
 amx_function_t _setPlayerArmour;
@@ -1077,14 +1091,14 @@ PyObject *sConnectNPC(PyObject *self, PyObject *args)
 	amx_Release(m_AMX, amxargs[1]); amx_Release(m_AMX, amxargs[2]);
 	Py_RETURN_NONE;
 }
-// int Create3DTextLabel(text[], color, Float:X, Float:Y, Float:Z, Float:DrawDistance, virtualworld, testLOS) -- TODO: test
+// int Create3DTextLabel(text[], color, Float:X, Float:Y, Float:Z, Float:DrawDistance, virtualworld, testLOS)
 PyObject *sCreate3DTextLabel(PyObject *self, PyObject *args)
 {
 	int virtworld, tlos;
 	float x, y, z, drawdist;
 	char *text;
 	PyObject *color;
-	PyArg_ParseTuple(args, "soffffii", &text, &color, &x, &y, &z, &drawdist, &virtworld, &tlos);
+	PyArg_ParseTuple(args, "sOffffib", &text, &color, &x, &y, &z, &drawdist, &virtworld, &tlos);
 	_getColor(color);
 
 	cell amxargs[9] = { 8 * sizeof(cell), 0, colcode, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(drawdist), virtworld, tlos };
@@ -1162,7 +1176,7 @@ PyObject *sCreatePlayer3DTextLabel(PyObject *self, PyObject *args)
 	float x, y, z, drawdist;
 	char *text;
 	PyObject *color;
-	PyArg_ParseTuple(args, "isoffffiii", &pid, &text, &color, &x, &y, &z, &drawdist, &ap, &av, &tlos);
+	PyArg_ParseTuple(args, "isOffffiib", &pid, &text, &color, &x, &y, &z, &drawdist, &ap, &av, &tlos);
 	_getColor(color);
 
 	cell amxargs[11] = { 10 * sizeof(cell), pid, 0, colcode, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(drawdist), ap, av, tlos };
@@ -1211,7 +1225,27 @@ PyObject *sDelete3DTextLabel(PyObject *self, PyObject *args)
 	cell amxargs[2] = { sizeof(cell), id };
 	return Py_BuildValue("i", _delete3DTextLabel(m_AMX, amxargs));
 }
-// DeletePVar -- no
+// int DeletePVar(playerid, varname[])
+PyObject *sDeletePVar(PyObject *self, PyObject *args)
+{
+	int playerid;
+	char *string;
+
+	PyArg_ParseTuple(args, "is", &playerid, &string);
+
+	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
+
+	int len = strlen(string) + 1;
+	cell *strstring;
+	amx_Allot(m_AMX, len, amxargs + 2, &strstring);
+	amx_SetString(strstring, string, 0, 0, len);
+
+	cell ret = _deletePVar(m_AMX, amxargs);
+
+	amx_Release(m_AMX, amxargs[2]);
+
+	return Py_BuildValue("i", ret);
+}
 // int DeletePlayer3DTextLabel(playerid, PlayerText3D:id) -- TODO: test
 PyObject *sDeletePlayer3DTextLabel(PyObject *self, PyObject *args)
 {
@@ -1663,9 +1697,77 @@ PyObject *sGetObjectRot(PyObject *self, PyObject *args)
 
 	return Py_BuildValue("{s:f,s:f,s:f}", "x", p[0], "y", p[1], "z", p[2]);
 }
-// GetPVarFloat -- no
-// GetPVarInt -- no
-// GetPVarString -- no
+// int GetPVarFloat(playerid, varname[])
+PyObject *sGetPVarFloat(PyObject *self, PyObject *args)
+{
+	int playerid;
+	char *string;
+
+	PyArg_ParseTuple(args, "is", &playerid, &string);
+
+	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
+
+	int len = strlen(string) + 1;
+	cell *strstring;
+	amx_Allot(m_AMX, len, amxargs + 2, &strstring);
+	amx_SetString(strstring, string, 0, 0, len);
+
+	cell ret = _getPVarFloat(m_AMX, amxargs);
+
+	amx_Release(m_AMX, amxargs[2]);
+
+	return Py_BuildValue("f", amx_ctof(ret));
+}
+// int GetPVarInt(playerid, varname[])
+PyObject *sGetPVarInt(PyObject *self, PyObject *args)
+{
+	int playerid;
+	char *string;
+
+	PyArg_ParseTuple(args, "is", &playerid, &string);
+
+	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
+
+	int len = strlen(string) + 1;
+	cell *strstring;
+	amx_Allot(m_AMX, len, amxargs + 2, &strstring);
+	amx_SetString(strstring, string, 0, 0, len);
+
+	cell ret = _getPVarInt(m_AMX, amxargs);
+
+	amx_Release(m_AMX, amxargs[2]);
+
+	return Py_BuildValue("i", ret);
+}
+// int GetPVarString(playerid, varname[])
+PyObject *sGetPVarString(PyObject *self, PyObject *args)
+{
+	int playerid;
+	char *string;
+
+	PyArg_ParseTuple(args, "is", &playerid, &string);
+
+	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 2048 };
+
+	int len = strlen(string) + 1;
+	cell *strstring;
+	amx_Allot(m_AMX, len, amxargs + 2, &strstring);
+	amx_SetString(strstring, string, 0, 0, len);
+
+	cell *retstring;
+	amx_Allot(m_AMX, 2048, amxargs + 3, &retstring);
+
+	_getPVarString(m_AMX, amxargs);
+
+	char *pstring = _getString(m_AMX, amxargs[3]);
+	PyObject *retval = Py_BuildValue("s", pstring);
+
+	amx_Release(m_AMX, amxargs[2]);
+	amx_Release(m_AMX, amxargs[3]);
+	_del(pstring);
+
+	return retval;
+}
 // GetPVarType -- no
 // int GetPlayerAmmo(playerid) -- TODO: test
 PyObject *sGetPlayerAmmo(PyObject *self, PyObject *args)
@@ -3403,9 +3505,76 @@ PyObject *sSetObjectRot(PyObject *self, PyObject *args)
 	_setObjectRot(m_AMX, amxargs);
 	Py_RETURN_NONE;
 }
-// SetPVarFloat -- no
-// SetPVarInt -- no
-// SetPVarString -- no
+// SetPVarFloat(playerid, varname[], Float:float_value)
+PyObject *sSetPVarFloat(PyObject *self, PyObject *args)
+{
+	int playerid;
+	char *string;
+	float value;
+
+	PyArg_ParseTuple(args, "isf", &playerid, &string, &value);
+
+	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, amx_ftoc(value) };
+
+	int len = strlen(string) + 1;
+	cell *strstring;
+	amx_Allot(m_AMX, len, amxargs + 2, &strstring);
+	amx_SetString(strstring, string, 0, 0, len);
+
+	cell ret = _setPVarFloat(m_AMX, amxargs);
+
+	amx_Release(m_AMX, amxargs[2]);
+
+	return Py_BuildValue("i", ret);
+}
+// SetPVarInt(playerid, varname[], value)
+PyObject *sSetPVarInt(PyObject *self, PyObject *args)
+{
+	int playerid, value;
+	char *string;
+
+	PyArg_ParseTuple(args, "isi", &playerid, &string, &value);
+
+	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, value };
+
+	int len = strlen(string) + 1;
+	cell *strstring;
+	amx_Allot(m_AMX, len, amxargs + 2, &strstring);
+	amx_SetString(strstring, string, 0, 0, len);
+
+	cell ret = _setPVarInt(m_AMX, amxargs);
+
+	amx_Release(m_AMX, amxargs[2]);
+
+	return Py_BuildValue("i", ret);
+}
+// SetPVarString(playerid, varname[], string_value[])
+PyObject *sSetPVarString(PyObject *self, PyObject *args)
+{
+	int playerid;
+	char *string, *value;
+
+	PyArg_ParseTuple(args, "iss", &playerid, &string, &value);
+
+	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, 0 };
+
+	int len = strlen(string) + 1;
+	cell *strstring;
+	amx_Allot(m_AMX, len, amxargs + 2, &strstring);
+	amx_SetString(strstring, string, 0, 0, len);
+
+	len = strlen(value) + 1;
+	cell *strvalue;
+	amx_Allot(m_AMX, len, amxargs + 3, &strvalue);
+	amx_SetString(strvalue, value, 0, 0, len);
+
+	_setPVarString(m_AMX, amxargs);
+
+	amx_Release(m_AMX, amxargs[2]);
+	amx_Release(m_AMX, amxargs[3]);
+
+	Py_RETURN_NONE;
+}
 // SetPlayerAmmo(playerid, weapon, ammo)
 PyObject *sSetPlayerAmmo(PyObject *self, PyObject *args)
 {
