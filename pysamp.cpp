@@ -53,6 +53,8 @@ PyMethodDef _pySampMethods[] =
 	{ "Ban", sBan, METH_VARARGS, "Bans a player" },
 	{ "BanEx", sBanEx, METH_VARARGS, "Bans a player with a reason" },
 
+	{ "CallRemoteFunction", sCallRemoteFunction, METH_VARARGS, "Call a Pawn function by name" },
+
 	{ "CancelEdit", sCancelEdit, METH_VARARGS, "" },
 	{ "CancelSelectTextDraw", sCancelSelectTextDraw, METH_VARARGS, "" },
 	{ "ChangeVehicleColor", sChangeVehicleColor, METH_VARARGS, "Changes a vehicle's colors" },

@@ -145,9 +145,8 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	// workaround for missing Python symbols in Python C modules
 	#ifndef WIN32
 		// load the Python library (version taken from includes) with RTLD_GLOBAL
-		char *libname = (char*)malloc(20);
-		snprintf(libname, 20, "libpython%d.%d.so.1.0", PY_MAJOR_VERSION, PY_MINOR_VERSION);
-		//void *h = dlopen("libpython" PY_MAJOR_VERSION "." PY_MINOR_VERSION ".so.1", RTLD_LAZY | RTLD_GLOBAL); // TODO: maybe find out, how to concat strings and ints
+		char *libname = (char*)malloc(32);
+		snprintf(libname, 32, "libpython%d.%dm.so.1.0", PY_MAJOR_VERSION, PY_MINOR_VERSION);
 		void *h = dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);
 		if (!h) printf("%s\n", dlerror());
 		free(libname);
@@ -167,14 +166,6 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 
 	logprintf("\tPython plugin unloaded");
 }
-
-//----------------------------------------------------------
-// This is the sourcecode of the HelloWorld pawn native that we
-// will be adding. "amx" is a pointer to the AMX-instance that's
-// calling the function (e.g. a filterscript) and "params" is
-// an array to the passed parameters. The first entry (params[0])
-// is equal to  4 * PassedParameters, e.g. 16 for 4 parameters.
-
 
 // Loads a specific python script
 static cell AMX_NATIVE_CALL n_LoadPython(AMX* amx, cell* params)

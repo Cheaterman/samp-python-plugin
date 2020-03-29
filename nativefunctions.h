@@ -76,6 +76,8 @@ extern amx_function_t _attachTrailerToVehicle;
 extern amx_function_t _ban;
 extern amx_function_t _banEx;
 
+extern amx_function_t _callRemoteFunction;
+
 extern amx_function_t _cancelEdit;
 extern amx_function_t _cancelSelectTextDraw;
 extern amx_function_t _changeVehicleColor;
@@ -414,6 +416,8 @@ PyObject *sAttachTrailerToVehicle(PyObject *self, PyObject *args);
 
 PyObject *sBan(PyObject *self, PyObject *args);
 PyObject *sBanEx(PyObject *self, PyObject *args);
+
+PyObject *sCallRemoteFunction(PyObject *self, PyObject *args);
 
 PyObject *sCancelEdit(PyObject *self, PyObject *args);
 PyObject *sCancelSelectTextDraw(PyObject *self, PyObject *args);

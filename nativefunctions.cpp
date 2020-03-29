@@ -72,6 +72,8 @@ void _initAMX(AMX *amx)
 	_ban							= _findNative(amx, "Ban");
 	_banEx							= _findNative(amx, "BanEx");
 
+	_callRemoteFunction					= _findNative(amx, "CallRemoteFunction");
+
 	_cancelEdit						= _findNative(amx, "CancelEdit");
 	_cancelSelectTextDraw			= _findNative(amx, "CancelSelectTextDraw");
 	_changeVehicleColor				= _findNative(amx, "ChangeVehicleColor");
@@ -408,6 +410,8 @@ amx_function_t _attachTrailerToVehicle;
 
 amx_function_t _ban;
 amx_function_t _banEx;
+
+amx_function_t _callRemoteFunction;
 
 amx_function_t _cancelEdit;
 amx_function_t _cancelSelectTextDraw;
@@ -1016,7 +1020,121 @@ PyObject *sBanEx(PyObject *self, PyObject *args)
 }
 
 // CallLocalFunction -- no
-// CallRemoteFunction -- doesn't semm to work anyway (like timers) with non-string parameters
+
+// CallRemoteFunction(function[], format[], {Float,_}:...)
+PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
+{
+	const char *function = NULL,
+		*format = NULL;
+	Py_ssize_t function_len = 0,
+		format_len = 0,
+		function_args_count = 0;
+
+	function = PyUnicode_AsUTF8AndSize(
+		PyTuple_GetItem(args, 0),
+		&function_len
+	);
+	if(function == NULL)
+		return NULL;
+	function_len += 1;
+
+	format = PyUnicode_AsUTF8AndSize(
+		PyTuple_GetItem(args, 1),
+		&format_len
+	);
+	if(format == NULL)
+		return NULL;
+	format_len += 1;
+
+	int current_amx_arg = 3;
+	cell *amxargs;
+	size_t amx_args_size = current_amx_arg * sizeof(cell);
+
+	// -2 because we already got function and format
+	function_args_count = PyTuple_Size(args) - 2;
+	amx_args_size += function_args_count * sizeof(cell);
+
+	cell *pawn_string = NULL;
+
+	amxargs = (cell *)malloc(amx_args_size);
+	memset(amxargs, 0, amx_args_size);
+	// Does not include the first cell itself
+	amxargs[0] = amx_args_size - sizeof(cell);
+
+	amx_Allot(m_AMX, function_len, &(amxargs[1]), &pawn_string);
+	amx_SetString(pawn_string, function, 0, 0, function_len);
+
+	amx_Allot(m_AMX, format_len, &(amxargs[2]), &pawn_string);
+	amx_SetString(pawn_string, format, 0, 0, format_len);
+
+	if(function_args_count > 0)
+	{
+		PyObject* current_argument;
+
+		for(Py_ssize_t i = 0; i < function_args_count; ++i)
+		{
+			// +2 because we already got function and format
+			current_argument = PyTuple_GetItem(args, i + 2);
+
+			if(
+				PyLong_Check(current_argument)
+				|| PyBool_Check(current_argument)
+			)
+			{
+				amxargs[current_amx_arg] = (int)PyLong_AsLong(current_argument);
+			}
+			else if(PyFloat_Check(current_argument))
+			{
+				float python_float = PyFloat_AsDouble(current_argument);
+				amxargs[current_amx_arg] = amx_ftoc(python_float);
+			}
+			else if(PyUnicode_Check(current_argument))
+			{
+				Py_ssize_t python_string_length;
+				const char *python_string = PyUnicode_AsUTF8AndSize(
+					current_argument,
+					&python_string_length
+				);
+				python_string_length += 1;
+				amx_Allot(
+					m_AMX,
+					python_string_length,
+					&(amxargs[current_amx_arg]),
+					&pawn_string
+				);
+				amx_SetString(
+					pawn_string,
+					python_string,
+					0,
+					0,
+					python_string_length
+				);
+			}
+			else
+			{
+				char *repr;
+				size_t size;
+				FILE *bytes_io = open_memstream(&repr, &size);
+				PyObject_Print(current_argument, bytes_io, 0);
+				fclose(bytes_io);
+				logprintf(
+					"PYTHON: Could not convert CallRemoteFunction argument %s",
+					repr
+				);
+				free(repr);
+			}
+			current_amx_arg += 1;
+		}
+	}
+
+	cell ret = _callRemoteFunction(m_AMX, amxargs);
+
+	amx_Release(m_AMX, amxargs[1]);
+	free(amxargs);
+
+	return Py_BuildValue("i", ret);
+}
+
 // CancelEdit(playerid) -- TODO: test
 PyObject *sCancelEdit(PyObject *self, PyObject *args)
 {
