@@ -280,6 +280,7 @@ public _unusedFunc()
 	ApplyAnimation(0, "", "", 0.0, 0, 0, 0, 0, 0, 0);
 	Ban(0);
 	BanEx(0, "");
+	CallRemoteFunction("", "");
 	CancelEdit(0);
 	CancelSelectTextDraw(0);
 	ChangeVehicleColor(0, 0, 0);

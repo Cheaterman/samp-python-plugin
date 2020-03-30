@@ -1047,25 +1047,25 @@ PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 	format_len += 1;
 
 	int current_amx_arg = 3;
-	cell *amxargs;
+	cell *amxargs = NULL;
 	size_t amx_args_size = current_amx_arg * sizeof(cell);
 
 	// -2 because we already got function and format
 	function_args_count = PyTuple_Size(args) - 2;
 	amx_args_size += function_args_count * sizeof(cell);
 
-	cell *pawn_string = NULL;
+	cell *pawn_address = NULL;
 
 	amxargs = (cell *)malloc(amx_args_size);
 	memset(amxargs, 0, amx_args_size);
 	// Does not include the first cell itself
 	amxargs[0] = amx_args_size - sizeof(cell);
 
-	amx_Allot(m_AMX, function_len, &(amxargs[1]), &pawn_string);
-	amx_SetString(pawn_string, function, 0, 0, function_len);
+	amx_Allot(m_AMX, function_len, &(amxargs[1]), &pawn_address);
+	amx_SetString(pawn_address, function, 0, 0, function_len);
 
-	amx_Allot(m_AMX, format_len, &(amxargs[2]), &pawn_string);
-	amx_SetString(pawn_string, format, 0, 0, format_len);
+	amx_Allot(m_AMX, format_len, &(amxargs[2]), &pawn_address);
+	amx_SetString(pawn_address, format, 0, 0, format_len);
 
 	if(function_args_count > 0)
 	{
@@ -1076,17 +1076,21 @@ PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 			// +2 because we already got function and format
 			current_argument = PyTuple_GetItem(args, i + 2);
 
-			if(
-				PyLong_Check(current_argument)
-				|| PyBool_Check(current_argument)
-			)
+			if(PyBool_Check(current_argument))
 			{
-				amxargs[current_amx_arg] = (int)PyLong_AsLong(current_argument);
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				*pawn_address = PyObject_IsTrue(current_argument);
+			}
+			else if(PyLong_Check(current_argument))
+			{
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				*pawn_address = PyLong_AsLong(current_argument);
 			}
 			else if(PyFloat_Check(current_argument))
 			{
 				float python_float = PyFloat_AsDouble(current_argument);
-				amxargs[current_amx_arg] = amx_ftoc(python_float);
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				*pawn_address = amx_ftoc(python_float);
 			}
 			else if(PyUnicode_Check(current_argument))
 			{
@@ -1100,10 +1104,10 @@ PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 					m_AMX,
 					python_string_length,
 					&(amxargs[current_amx_arg]),
-					&pawn_string
+					&pawn_address
 				);
 				amx_SetString(
-					pawn_string,
+					pawn_address,
 					python_string,
 					0,
 					0,
