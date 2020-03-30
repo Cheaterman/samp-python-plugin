@@ -21,10 +21,11 @@
 // functions for finding native PAWN functions etc.
 //-----------------------------------------
 
-amx_function_t _findNative(AMX *amx, char *name, bool nowarn=false);
+amx_function_t _findNative(AMX *amx, const char *name, bool nowarn=false);
 void _initAMX(AMX *amx);
 
 char *_getString(AMX *amx, cell params);
+void _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from);
 #define _del(x) if (x) { delete [] (x); (x) = NULL; }
 #define _pyNoReturnVal(x) (x == NULL || x == Py_None) 
 #define _retPyInt(pyobj, def) \
@@ -77,6 +78,7 @@ extern amx_function_t _ban;
 extern amx_function_t _banEx;
 
 extern amx_function_t _callRemoteFunction;
+extern amx_function_t _callNativeFunction;
 
 extern amx_function_t _cancelEdit;
 extern amx_function_t _cancelSelectTextDraw;
@@ -418,6 +420,7 @@ PyObject *sBan(PyObject *self, PyObject *args);
 PyObject *sBanEx(PyObject *self, PyObject *args);
 
 PyObject *sCallRemoteFunction(PyObject *self, PyObject *args);
+PyObject *sCallNativeFunction(PyObject *self, PyObject *args);
 
 PyObject *sCancelEdit(PyObject *self, PyObject *args);
 PyObject *sCancelSelectTextDraw(PyObject *self, PyObject *args);

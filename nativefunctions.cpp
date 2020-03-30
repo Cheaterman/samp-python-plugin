@@ -24,7 +24,7 @@
 // functions for finding native PAWN functions
 //-----------------------------------------
 
-amx_function_t _findNative(AMX *amx, char *name, bool nowarn)
+amx_function_t _findNative(AMX *amx, const char *name, bool nowarn)
 {
 	int idx;
 	// find the function and check for an error
@@ -1021,6 +1021,73 @@ PyObject *sBanEx(PyObject *self, PyObject *args)
 
 // CallLocalFunction -- no
 
+void _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from)
+{
+	PyObject* current_argument = NULL;
+	cell *pawn_address = NULL;
+	Py_ssize_t pyargs_count = PyTuple_Size(pyargs) - start_from;
+	// +1 because first AMX arg is length of args
+	unsigned int current_amx_arg = start_from + 1;
+
+	for(Py_ssize_t i = 0; i < pyargs_count; i++)
+	{
+		current_argument = PyTuple_GetItem(pyargs, i + start_from);
+
+		if(PyBool_Check(current_argument))
+		{
+			amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+			*pawn_address = PyObject_IsTrue(current_argument);
+		}
+		else if(PyLong_Check(current_argument))
+		{
+			amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+			*pawn_address = PyLong_AsLong(current_argument);
+		}
+		else if(PyFloat_Check(current_argument))
+		{
+			float python_float = PyFloat_AsDouble(current_argument);
+			amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+			*pawn_address = amx_ftoc(python_float);
+		}
+		else if(PyUnicode_Check(current_argument))
+		{
+			Py_ssize_t python_string_length;
+			const char *python_string = PyUnicode_AsUTF8AndSize(
+				current_argument,
+				&python_string_length
+			);
+			python_string_length += 1;  // Include final null byte
+			amx_Allot(
+				m_AMX,
+				python_string_length,
+				&(amxargs[current_amx_arg]),
+				&pawn_address
+			);
+			amx_SetString(
+				pawn_address,
+				python_string,
+				0,
+				0,
+				python_string_length
+			);
+		}
+		else
+		{
+			char *repr;
+			size_t size;
+			FILE *bytes_io = open_memstream(&repr, &size);
+			PyObject_Print(current_argument, bytes_io, 0);
+			fclose(bytes_io);
+			logprintf(
+				"PYTHON: Could not convert argument %s",
+				repr
+			);
+			free(repr);
+		}
+		current_amx_arg += 1;
+	}
+}
+
 // CallRemoteFunction(function[], format[], {Float,_}:...)
 PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 {
@@ -1046,9 +1113,9 @@ PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 		return NULL;
 	format_len += 1;
 
-	int current_amx_arg = 3;
 	cell *amxargs = NULL;
-	size_t amx_args_size = current_amx_arg * sizeof(cell);
+	// *3: amx args length, function, format
+	size_t amx_args_size = 3 * sizeof(cell);
 
 	// -2 because we already got function and format
 	function_args_count = PyTuple_Size(args) - 2;
@@ -1058,7 +1125,7 @@ PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 
 	amxargs = (cell *)malloc(amx_args_size);
 	memset(amxargs, 0, amx_args_size);
-	// Does not include the first cell itself
+	// -sizeof(cell) - Does not include the first cell itself
 	amxargs[0] = amx_args_size - sizeof(cell);
 
 	amx_Allot(m_AMX, function_len, &(amxargs[1]), &pawn_address);
@@ -1067,71 +1134,51 @@ PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 	amx_Allot(m_AMX, format_len, &(amxargs[2]), &pawn_address);
 	amx_SetString(pawn_address, format, 0, 0, format_len);
 
-	if(function_args_count > 0)
+	_pyArgsToAMX(amxargs, args, 2);
+	cell ret = _callRemoteFunction(m_AMX, amxargs);
+
+	amx_Release(m_AMX, amxargs[1]);
+	free(amxargs);
+
+	return Py_BuildValue("i", ret);
+}
+
+PyObject *sCallNativeFunction(PyObject *self, PyObject *args)
+{
+	const char *function = NULL;
+
+	function = PyUnicode_AsUTF8AndSize(PyTuple_GetItem(args, 0), NULL);
+
+	if(function == NULL)
+		return NULL;
+
+	amx_function_t amx_function = _findNative(m_AMX, function, true);
+
+	if(amx_function == NULL)
 	{
-		PyObject* current_argument;
-
-		for(Py_ssize_t i = 0; i < function_args_count; ++i)
-		{
-			// +2 because we already got function and format
-			current_argument = PyTuple_GetItem(args, i + 2);
-
-			if(PyBool_Check(current_argument))
-			{
-				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
-				*pawn_address = PyObject_IsTrue(current_argument);
-			}
-			else if(PyLong_Check(current_argument))
-			{
-				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
-				*pawn_address = PyLong_AsLong(current_argument);
-			}
-			else if(PyFloat_Check(current_argument))
-			{
-				float python_float = PyFloat_AsDouble(current_argument);
-				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
-				*pawn_address = amx_ftoc(python_float);
-			}
-			else if(PyUnicode_Check(current_argument))
-			{
-				Py_ssize_t python_string_length;
-				const char *python_string = PyUnicode_AsUTF8AndSize(
-					current_argument,
-					&python_string_length
-				);
-				python_string_length += 1;
-				amx_Allot(
-					m_AMX,
-					python_string_length,
-					&(amxargs[current_amx_arg]),
-					&pawn_address
-				);
-				amx_SetString(
-					pawn_address,
-					python_string,
-					0,
-					0,
-					python_string_length
-				);
-			}
-			else
-			{
-				char *repr;
-				size_t size;
-				FILE *bytes_io = open_memstream(&repr, &size);
-				PyObject_Print(current_argument, bytes_io, 0);
-				fclose(bytes_io);
-				logprintf(
-					"PYTHON: Could not convert CallRemoteFunction argument %s",
-					repr
-				);
-				free(repr);
-			}
-			current_amx_arg += 1;
-		}
+		PyErr_Format(
+			PyExc_NameError,
+			"PYTHON: Unknown native function %s",
+			function
+		);
+		return NULL;
 	}
 
-	cell ret = _callRemoteFunction(m_AMX, amxargs);
+	cell *amxargs = NULL;
+	size_t amx_args_size = sizeof(cell);
+
+	// -1 because we already got function
+	Py_ssize_t function_args_count = PyTuple_Size(args) - 1;
+	amx_args_size += function_args_count * sizeof(cell);
+
+	amxargs = (cell *)malloc(amx_args_size);
+	memset(amxargs, 0, amx_args_size);
+	// -sizeof(cell) - Does not include the first cell itself
+	amxargs[0] = amx_args_size - sizeof(cell);
+
+	// -1 because we don't put function in amxargs
+	_pyArgsToAMX(amxargs - 1, args, 1);
+	cell ret = amx_function(m_AMX, amxargs);
 
 	amx_Release(m_AMX, amxargs[1]);
 	free(amxargs);
