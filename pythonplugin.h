@@ -79,7 +79,7 @@ extern Mutex *m_MainLock;
 	unsigned long long GetTickCount();
 
 	#define THREAD_RETURN		void *
-	#define TID_TYPE			int
+	#define TID_TYPE		pthread_t
 #endif
 
 #endif

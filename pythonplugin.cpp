@@ -145,11 +145,17 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 	// workaround for missing Python symbols in Python C modules
 	#ifndef WIN32
 		// load the Python library (version taken from includes) with RTLD_GLOBAL
-		char *libname = (char*)malloc(32);
-		snprintf(libname, 32, "libpython%d.%dm.so.1.0", PY_MAJOR_VERSION, PY_MINOR_VERSION);
+		char libname[32];
+		snprintf(
+			libname,
+			sizeof(libname),
+			"libpython%d.%dm.so.1.0",
+			PY_MAJOR_VERSION,
+			PY_MINOR_VERSION
+		);
 		void *h = dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);
-		if (!h) printf("%s\n", dlerror());
-		free(libname);
+		if(!h)
+			printf("%s\n", dlerror());
 	#endif
 
 	logprintf("\tPython plugin loaded");
@@ -181,12 +187,12 @@ static cell AMX_NATIVE_CALL n_LoadPython(AMX* amx, cell* params)
 			#ifdef _WIN32
 				m_pyMainThread = CreateThread(NULL, 0, _pyInit, NULL, 0, NULL);
 			#else
-				pthread_t tid;
-				m_pyMainThread = pthread_create(&tid, NULL, _pyInit, NULL);
+				pthread_create(&m_pyMainThread, NULL, _pyInit, NULL);
 			#endif
 
 			// wait for the Python main thread to initialize Python
-			while (!Py_IsInitialized()) sleep(1);
+			while(!Py_IsInitialized())
+				sleep(.01);
 		#else
 			_pyInit();
 		#endif
