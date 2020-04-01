@@ -1021,13 +1021,15 @@ PyObject *sBanEx(PyObject *self, PyObject *args)
 
 // CallLocalFunction -- no
 
-void _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from)
+// Returns the cell that should be released with amx_Release (or zero)
+cell _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from, bool by_value)
 {
 	PyObject* current_argument = NULL;
 	cell *pawn_address = NULL;
 	Py_ssize_t pyargs_count = PyTuple_Size(pyargs) - start_from;
 	// +1 because first AMX arg is length of args
 	unsigned int current_amx_arg = start_from + 1;
+	cell ret = 0;
 
 	for(Py_ssize_t i = 0; i < pyargs_count; i++)
 	{
@@ -1035,18 +1037,39 @@ void _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from)
 
 		if(PyBool_Check(current_argument))
 		{
-			amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+			if(by_value)
+				pawn_address = &(amxargs[current_amx_arg]);
+			else
+			{
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				if(ret == 0)
+					ret = amxargs[current_amx_arg];
+			}
 			*pawn_address = PyObject_IsTrue(current_argument);
 		}
 		else if(PyLong_Check(current_argument))
 		{
-			amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
-			*pawn_address = PyLong_AsLong(current_argument);
+			if(by_value)
+				pawn_address = &(amxargs[current_amx_arg]);
+			else
+			{
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				if(ret == 0)
+					ret = amxargs[current_amx_arg];
+			}
+			*pawn_address = PyLong_AsUnsignedLong(current_argument);
 		}
 		else if(PyFloat_Check(current_argument))
 		{
 			float python_float = PyFloat_AsDouble(current_argument);
-			amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+			if(by_value)
+				pawn_address = &(amxargs[current_amx_arg]);
+			else
+			{
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				if(ret == 0)
+					ret = amxargs[current_amx_arg];
+			}
 			*pawn_address = amx_ftoc(python_float);
 		}
 		else if(PyUnicode_Check(current_argument))
@@ -1070,6 +1093,22 @@ void _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from)
 				0,
 				python_string_length
 			);
+			if(ret == 0)
+				ret = amxargs[current_amx_arg];
+		}
+		else if(by_value && (
+			PyTuple_Check(current_argument)
+			|| PyList_Check(current_argument)
+		))
+		{
+			cell new_ret = 0;
+			new_ret = _pyArgsToAMX(
+				&(amxargs[current_amx_arg - 1]),
+				current_argument,
+				0
+			);
+			if(ret == 0)
+				ret = new_ret;
 		}
 		else
 		{
@@ -1086,6 +1125,7 @@ void _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from)
 		}
 		current_amx_arg += 1;
 	}
+	return ret;
 }
 
 // CallRemoteFunction(function[], format[], {Float,_}:...)
@@ -1134,13 +1174,33 @@ PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 	amx_Allot(m_AMX, format_len, &(amxargs[2]), &pawn_address);
 	amx_SetString(pawn_address, format, 0, 0, format_len);
 
-	_pyArgsToAMX(amxargs, args, 2);
+	cell release = _pyArgsToAMX(amxargs, args, 2);
 	cell ret = _callRemoteFunction(m_AMX, amxargs);
 
-	amx_Release(m_AMX, amxargs[1]);
+	if(release)
+		amx_Release(m_AMX, release);
 	free(amxargs);
 
 	return Py_BuildValue("i", ret);
+}
+
+Py_ssize_t _getRecursiveSize(PyObject *args)
+{
+	Py_ssize_t start_size = PySequence_Size(args);
+	Py_ssize_t total_size = start_size;
+	PyObject* current_item = NULL;
+
+	for(Py_ssize_t i = 0; i < start_size; ++i)
+	{
+		current_item = PySequence_GetItem(args, i);
+		if(
+			PyTuple_Check(current_item)
+			|| PyList_Check(current_item)
+		)
+			total_size += _getRecursiveSize(current_item);
+	}
+
+	return total_size;
 }
 
 PyObject *sCallNativeFunction(PyObject *self, PyObject *args)
@@ -1168,7 +1228,7 @@ PyObject *sCallNativeFunction(PyObject *self, PyObject *args)
 	size_t amx_args_size = sizeof(cell);
 
 	// -1 because we already got function
-	Py_ssize_t function_args_count = PyTuple_Size(args) - 1;
+	Py_ssize_t function_args_count = _getRecursiveSize(args) - 1;
 	amx_args_size += function_args_count * sizeof(cell);
 
 	amxargs = (cell *)malloc(amx_args_size);
@@ -1177,10 +1237,11 @@ PyObject *sCallNativeFunction(PyObject *self, PyObject *args)
 	amxargs[0] = amx_args_size - sizeof(cell);
 
 	// -1 because we don't put function in amxargs
-	_pyArgsToAMX(amxargs - 1, args, 1);
+	cell release = _pyArgsToAMX(amxargs - 1, args, 1, true);
 	cell ret = amx_function(m_AMX, amxargs);
 
-	amx_Release(m_AMX, amxargs[1]);
+	if(release)
+		amx_Release(m_AMX, release);
 	free(amxargs);
 
 	return Py_BuildValue("i", ret);
