@@ -5019,7 +5019,8 @@ cell AMX_NATIVE_CALL n_OnDialogResponse(AMX *amx, cell *params)
 	char *str = _getString(amx, params[5]);
 
 	PyEnsureGIL;
-	PyObject *o = Py_BuildValue("iiiis", playerid, dialogid, response, listitem, str);
+	PyObject *o = Py_BuildValue("iiiiN", playerid, dialogid, response, listitem, PyUnicode_Decode(str, strlen(str), "cp1252", "strict"));
+
 	int ret = _pyCallAll("OnDialogResponse", o, 1, 0);
 	Py_DECREF(o);
 	PyReleaseGIL;
@@ -5093,7 +5094,7 @@ cell AMX_NATIVE_CALL n_OnPlayerCommandText(AMX *amx, cell *params)
 	char *cmd = _getString(m_AMX, params[2]);
 
 	PyEnsureGIL;
-	PyObject *o = Py_BuildValue("is", playerid, cmd);
+	PyObject *o = Py_BuildValue("iN", playerid, PyUnicode_Decode(cmd, strlen(cmd), "cp1252", "strict"));
 	int ret = _pyCallAll("OnPlayerCommandText", o, 1, 0);
 	Py_DECREF(o);
 	PyReleaseGIL;
@@ -5374,7 +5375,7 @@ cell AMX_NATIVE_CALL n_OnPlayerText(AMX *amx, cell *params)
 	char *txt = _getString(m_AMX, params[2]);
 
 	PyEnsureGIL;
-	PyObject *o = Py_BuildValue("is", params[1], txt);
+	PyObject *o = Py_BuildValue("iN", params[1], PyUnicode_Decode(txt, strlen(txt), "cp1252", "strict"));
 	int ret = _pyCallAll("OnPlayerText", o);
 	Py_DECREF(o);
 	PyReleaseGIL;
@@ -5399,7 +5400,7 @@ cell AMX_NATIVE_CALL n_OnRconCommand(AMX *amx, cell *params)
 	char *cmd = _getString(m_AMX, params[1]);
 
 	PyEnsureGIL;
-	PyObject *o = Py_BuildValue("s", cmd);
+	PyObject *o = Py_BuildValue("N", PyUnicode_Decode(cmd, strlen(cmd), "cp1252", "strict"));
 	int ret = _pyCallAll("OnRconCommand", o);
 	Py_DECREF(o);
 	PyReleaseGIL;
@@ -5415,6 +5416,10 @@ cell AMX_NATIVE_CALL n_OnRconLoginAttempt(AMX *amx, cell *params)
 
 	PyEnsureGIL;
 	PyObject *o = Py_BuildValue("ssi", ip, pass, params[3]);
+
+	if(o == NULL)
+		return 0;
+
 	int ret = _pyCallAll("OnRconLoginAttempt", o);
 	Py_DECREF(o);
 	PyReleaseGIL;
