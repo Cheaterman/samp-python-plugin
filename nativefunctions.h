@@ -22,11 +22,12 @@
 //-----------------------------------------
 
 amx_function_t _findNative(AMX *amx, const char *name, bool nowarn=false);
+cell _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from, bool by_value=false);
+Py_ssize_t _getRecursiveSize(PyObject *args);
+int _stringToCP1252(PyObject *source, char **destination);
 void _initAMX(AMX *amx);
 
 char *_getString(AMX *amx, cell params);
-cell _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from, bool by_value=false);
-Py_ssize_t _getRecursiveSize(PyObject *args);
 #define _del(x) if (x) { delete [] (x); (x) = NULL; }
 #define _pyNoReturnVal(x) (x == NULL || x == Py_None) 
 #define _retPyInt(pyobj, def) \

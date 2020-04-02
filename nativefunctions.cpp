@@ -42,6 +42,148 @@ amx_function_t _findNative(AMX *amx, const char *name, bool nowarn)
 	return NULL;
 }
 
+// Returns the cell that should be released with amx_Release (or zero)
+cell _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from, bool by_value)
+{
+	PyObject* current_argument = NULL;
+	cell *pawn_address = NULL;
+	Py_ssize_t pyargs_count = PyTuple_Size(pyargs) - start_from;
+	// +1 because first AMX arg is length of args
+	unsigned int current_amx_arg = start_from + 1;
+	cell ret = 0;
+
+	for(Py_ssize_t i = 0; i < pyargs_count; i++)
+	{
+		current_argument = PyTuple_GetItem(pyargs, i + start_from);
+
+		if(PyBool_Check(current_argument))
+		{
+			if(by_value)
+				pawn_address = &(amxargs[current_amx_arg]);
+			else
+			{
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				if(ret == 0)
+					ret = amxargs[current_amx_arg];
+			}
+			*pawn_address = PyObject_IsTrue(current_argument);
+		}
+		else if(PyLong_Check(current_argument))
+		{
+			if(by_value)
+				pawn_address = &(amxargs[current_amx_arg]);
+			else
+			{
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				if(ret == 0)
+					ret = amxargs[current_amx_arg];
+			}
+			*pawn_address = PyLong_AsUnsignedLong(current_argument);
+		}
+		else if(PyFloat_Check(current_argument))
+		{
+			float python_float = PyFloat_AsDouble(current_argument);
+			if(by_value)
+				pawn_address = &(amxargs[current_amx_arg]);
+			else
+			{
+				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
+				if(ret == 0)
+					ret = amxargs[current_amx_arg];
+			}
+			*pawn_address = amx_ftoc(python_float);
+		}
+		else if(PyUnicode_Check(current_argument))
+		{
+			Py_ssize_t python_string_length;
+			const char *python_string = PyUnicode_AsUTF8AndSize(
+				current_argument,
+				&python_string_length
+			);
+			python_string_length += 1;  // Include final null byte
+			amx_Allot(
+				m_AMX,
+				python_string_length,
+				&(amxargs[current_amx_arg]),
+				&pawn_address
+			);
+			amx_SetString(
+				pawn_address,
+				python_string,
+				0,
+				0,
+				python_string_length
+			);
+			if(ret == 0)
+				ret = amxargs[current_amx_arg];
+		}
+		else if(by_value && (
+			PyTuple_Check(current_argument)
+			|| PyList_Check(current_argument)
+		))
+		{
+			cell new_ret = 0;
+			new_ret = _pyArgsToAMX(
+				&(amxargs[current_amx_arg - 1]),
+				current_argument,
+				0
+			);
+			if(ret == 0)
+				ret = new_ret;
+		}
+		else
+		{
+			char *repr;
+			size_t size;
+			FILE *bytes_io = open_memstream(&repr, &size);
+			PyObject_Print(current_argument, bytes_io, 0);
+			fclose(bytes_io);
+			logprintf(
+				"PYTHON: Could not convert argument %s",
+				repr
+			);
+			free(repr);
+		}
+		current_amx_arg += 1;
+	}
+	return ret;
+}
+
+// Gets the total size of sequence args recursively (top-level only)
+Py_ssize_t _getRecursiveSize(PyObject *args)
+{
+	Py_ssize_t start_size = PySequence_Size(args);
+	Py_ssize_t total_size = start_size;
+	PyObject* current_item = NULL;
+
+	for(Py_ssize_t i = 0; i < start_size; ++i)
+	{
+		current_item = PySequence_GetItem(args, i);
+		if(
+			PyTuple_Check(current_item)
+			|| PyList_Check(current_item)
+		)
+			total_size += PySequence_Size(current_item);
+	}
+
+	return total_size;
+}
+
+// Turns a Python string (PyUnicode) object into a cp1252-encoded char*
+int _stringToCP1252(PyObject *source, char **destination)
+{
+	PyObject *bytes = PyUnicode_AsEncodedString(source, "cp1252", "strict");
+
+	if(bytes == NULL)
+		return 0;
+
+	*destination = PyBytes_AsString(bytes);
+
+	if(*destination == NULL)
+		return 0;
+
+	return 1;
+}
 
 void _initAMX(AMX *amx)
 {
@@ -738,7 +880,7 @@ PyObject *sAddMenuItem(PyObject *self, PyObject *args)
 {
 	int mid, col;
 	char *title;
-	PyArg_ParseTuple(args, "iis", &mid, &col, &title);
+	PyArg_ParseTuple(args, "iiO&", &mid, &col, _stringToCP1252, &title);
 
 	cell amxargs[4] = { 3 * sizeof(cell), mid, col, 0 };
 
@@ -851,6 +993,7 @@ PyObject *sApplyAnimation(PyObject *self, PyObject *args)
 	int playerid, loop, lockx, locky, freeze, time, forcesync = 0;
 	char *animlib, *animname;
 	float fdelta;
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "issfiiiii|i", &playerid, &animlib, &animname, &fdelta, &loop, &lockx, &locky, &freeze, &time, &forcesync);
 
 	cell amxargs[11] = { 10 * sizeof(cell), playerid, 0, 0, amx_ftoc(fdelta), loop, lockx, locky, freeze, time, forcesync };
@@ -1002,7 +1145,7 @@ PyObject *sBanEx(PyObject *self, PyObject *args)
 {
 	int playerid;
 	char *reason;
-	PyArg_ParseTuple(args, "is", &playerid, &reason);
+	PyArg_ParseTuple(args, "iO&", &playerid, _stringToCP1252, &reason);
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
 
@@ -1020,113 +1163,6 @@ PyObject *sBanEx(PyObject *self, PyObject *args)
 }
 
 // CallLocalFunction -- no
-
-// Returns the cell that should be released with amx_Release (or zero)
-cell _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from, bool by_value)
-{
-	PyObject* current_argument = NULL;
-	cell *pawn_address = NULL;
-	Py_ssize_t pyargs_count = PyTuple_Size(pyargs) - start_from;
-	// +1 because first AMX arg is length of args
-	unsigned int current_amx_arg = start_from + 1;
-	cell ret = 0;
-
-	for(Py_ssize_t i = 0; i < pyargs_count; i++)
-	{
-		current_argument = PyTuple_GetItem(pyargs, i + start_from);
-
-		if(PyBool_Check(current_argument))
-		{
-			if(by_value)
-				pawn_address = &(amxargs[current_amx_arg]);
-			else
-			{
-				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
-				if(ret == 0)
-					ret = amxargs[current_amx_arg];
-			}
-			*pawn_address = PyObject_IsTrue(current_argument);
-		}
-		else if(PyLong_Check(current_argument))
-		{
-			if(by_value)
-				pawn_address = &(amxargs[current_amx_arg]);
-			else
-			{
-				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
-				if(ret == 0)
-					ret = amxargs[current_amx_arg];
-			}
-			*pawn_address = PyLong_AsUnsignedLong(current_argument);
-		}
-		else if(PyFloat_Check(current_argument))
-		{
-			float python_float = PyFloat_AsDouble(current_argument);
-			if(by_value)
-				pawn_address = &(amxargs[current_amx_arg]);
-			else
-			{
-				amx_Allot(m_AMX, 1, &(amxargs[current_amx_arg]), &pawn_address);
-				if(ret == 0)
-					ret = amxargs[current_amx_arg];
-			}
-			*pawn_address = amx_ftoc(python_float);
-		}
-		else if(PyUnicode_Check(current_argument))
-		{
-			Py_ssize_t python_string_length;
-			const char *python_string = PyUnicode_AsUTF8AndSize(
-				current_argument,
-				&python_string_length
-			);
-			python_string_length += 1;  // Include final null byte
-			amx_Allot(
-				m_AMX,
-				python_string_length,
-				&(amxargs[current_amx_arg]),
-				&pawn_address
-			);
-			amx_SetString(
-				pawn_address,
-				python_string,
-				0,
-				0,
-				python_string_length
-			);
-			if(ret == 0)
-				ret = amxargs[current_amx_arg];
-		}
-		else if(by_value && (
-			PyTuple_Check(current_argument)
-			|| PyList_Check(current_argument)
-		))
-		{
-			cell new_ret = 0;
-			new_ret = _pyArgsToAMX(
-				&(amxargs[current_amx_arg - 1]),
-				current_argument,
-				0
-			);
-			if(ret == 0)
-				ret = new_ret;
-		}
-		else
-		{
-			char *repr;
-			size_t size;
-			FILE *bytes_io = open_memstream(&repr, &size);
-			PyObject_Print(current_argument, bytes_io, 0);
-			fclose(bytes_io);
-			logprintf(
-				"PYTHON: Could not convert argument %s",
-				repr
-			);
-			free(repr);
-		}
-		current_amx_arg += 1;
-	}
-	return ret;
-}
 
 // CallRemoteFunction(function[], format[], {Float,_}:...)
 PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
@@ -1182,25 +1218,6 @@ PyObject *sCallRemoteFunction(PyObject *self, PyObject *args)
 	free(amxargs);
 
 	return Py_BuildValue("i", ret);
-}
-
-Py_ssize_t _getRecursiveSize(PyObject *args)
-{
-	Py_ssize_t start_size = PySequence_Size(args);
-	Py_ssize_t total_size = start_size;
-	PyObject* current_item = NULL;
-
-	for(Py_ssize_t i = 0; i < start_size; ++i)
-	{
-		current_item = PySequence_GetItem(args, i);
-		if(
-			PyTuple_Check(current_item)
-			|| PyList_Check(current_item)
-		)
-			total_size += PySequence_Size(current_item);
-	}
-
-	return total_size;
 }
 
 PyObject *sCallNativeFunction(PyObject *self, PyObject *args)
@@ -1301,6 +1318,7 @@ PyObject *sClearAnimations(PyObject *self, PyObject *args)
 PyObject *sConnectNPC(PyObject *self, PyObject *args)
 {
 	char *name, *script;
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "ss", &name, &script);
 
 	cell amxargs[3] = { 2 * sizeof(cell), 0, 0 };
@@ -1328,7 +1346,7 @@ PyObject *sCreate3DTextLabel(PyObject *self, PyObject *args)
 	float x, y, z, drawdist;
 	char *text;
 	PyObject *color;
-	PyArg_ParseTuple(args, "sOffffib", &text, &color, &x, &y, &z, &drawdist, &virtworld, &tlos);
+	PyArg_ParseTuple(args, "O&Offffib", _stringToCP1252, &text, &color, &x, &y, &z, &drawdist, &virtworld, &tlos);
 	_getColor(color);
 
 	cell amxargs[9] = { 8 * sizeof(cell), 0, colcode, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(drawdist), virtworld, tlos };
@@ -1363,7 +1381,7 @@ PyObject *sCreateMenu(PyObject *self, PyObject *args)
 	int cols;
 	float x, y, c1, c2;
 	char *title;
-	PyArg_ParseTuple(args, "siffff", &title, &cols, &x, &y, &c1, &c2);
+	PyArg_ParseTuple(args, "O&iffff", _stringToCP1252, &title, &cols, &x, &y, &c1, &c2);
 
 	cell amxargs[7] = { 6 * sizeof(cell), 0, cols, amx_ftoc(x), amx_ftoc(y), amx_ftoc(c1), amx_ftoc(c2) };
 
@@ -1406,7 +1424,7 @@ PyObject *sCreatePlayer3DTextLabel(PyObject *self, PyObject *args)
 	float x, y, z, drawdist;
 	char *text;
 	PyObject *color;
-	PyArg_ParseTuple(args, "isOffffiib", &pid, &text, &color, &x, &y, &z, &drawdist, &ap, &av, &tlos);
+	PyArg_ParseTuple(args, "iO&Offffiib", &pid, _stringToCP1252, &text, &color, &x, &y, &z, &drawdist, &ap, &av, &tlos);
 	_getColor(color);
 
 	cell amxargs[11] = { 10 * sizeof(cell), pid, 0, colcode, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(drawdist), ap, av, tlos };
@@ -1461,6 +1479,7 @@ PyObject *sDeletePVar(PyObject *self, PyObject *args)
 	int playerid;
 	char *string;
 
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &playerid, &string);
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
@@ -1684,7 +1703,7 @@ PyObject *sGameTextForAll(PyObject *self, PyObject *args)
 {
 	int time, style;
 	char *string;
-	PyArg_ParseTuple(args, "sii", &string, &time, &style);
+	PyArg_ParseTuple(args, "O&ii", _stringToCP1252, &string, &time, &style);
 
 	cell amxargs[4] = { 3 * sizeof(cell), 0, time, style };
 
@@ -1704,7 +1723,7 @@ PyObject *sGameTextForPlayer(PyObject *self, PyObject *args)
 {
 	int playerid, time, style;
 	char *string;
-	PyArg_ParseTuple(args, "isii", &playerid, &string, &time, &style);
+	PyArg_ParseTuple(args, "iO&ii", &playerid, _stringToCP1252, &string, &time, &style);
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, time, style };
 
@@ -1933,6 +1952,7 @@ PyObject *sGetPVarFloat(PyObject *self, PyObject *args)
 	int playerid;
 	char *string;
 
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &playerid, &string);
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
@@ -1954,6 +1974,7 @@ PyObject *sGetPVarInt(PyObject *self, PyObject *args)
 	int playerid;
 	char *string;
 
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &playerid, &string);
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
@@ -1975,6 +1996,7 @@ PyObject *sGetPVarString(PyObject *self, PyObject *args)
 	int playerid;
 	char *string;
 
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &playerid, &string);
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 2048 };
@@ -3071,6 +3093,7 @@ PyObject *sPlayAudioStreamForPlayer(PyObject *self, PyObject *args)
 	int pid, usepos = 0;
 	float x = 0.0, y = 0.0, z = 0.0, dist = 50.0;
 	char *url = NULL;
+	// No conversion, should always be ASCII (urlencoded if need be).
 	PyArg_ParseTuple(args, "is|ffffi", &pid, &url, &x, &y, &z, &dist, &usepos);
 	
 	cell amxargs[8] = { 7 * sizeof(cell), pid, 0, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(dist), usepos };
@@ -3143,7 +3166,7 @@ PyObject *sCreatePlayerTextDraw(PyObject *self, PyObject *args)
 	int pid;
 	float x, y;
 	char *txt = NULL;
-	PyArg_ParseTuple(args, "iffs", &pid, &x, &y, &txt);
+	PyArg_ParseTuple(args, "iffO&", &pid, &x, &y, _stringToCP1252, &txt);
 
 	cell amxargs[5] = { 4 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), 0 };
 
@@ -3353,7 +3376,7 @@ PyObject *sPlayerTextDrawSetString(PyObject *self, PyObject *args)
 {
 	int pid, txt;
 	char *string = NULL;
-	PyArg_ParseTuple(args, "iis", &pid, &txt, &string);
+	PyArg_ParseTuple(args, "iiO&", &pid, &txt, _stringToCP1252, &string);
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, 0 };
 
@@ -3479,7 +3502,7 @@ PyObject *sSendClientMessage(PyObject *self, PyObject *args)
 	int playerid;
 	PyObject *color;
 	char *msg = NULL;
-	PyArg_ParseTuple(args, "iOs", &playerid, &color, &msg);
+	PyArg_ParseTuple(args, "iOO&", &playerid, &color, _stringToCP1252, &msg);
 
 	_getColor(color);
 
@@ -3503,7 +3526,7 @@ PyObject *sSendClientMessageToAll(PyObject *self, PyObject *args)
 {
 	PyObject *color;
 	char *msg = NULL;
-	PyArg_ParseTuple(args, "Os", &color, &msg);
+	PyArg_ParseTuple(args, "OO&", &color, _stringToCP1252, &msg);
 
 	_getColor(color);
 
@@ -3537,7 +3560,7 @@ PyObject *sSendPlayerMessageToAll(PyObject *self, PyObject *args)
 {
 	int sid;
 	char *msg = NULL;
-	PyArg_ParseTuple(args, "is", &sid, &msg);
+	PyArg_ParseTuple(args, "iO&", &sid, _stringToCP1252, &msg);
 
 	if (msg == NULL) Py_RETURN_NONE;
 	cell amxargs[3] = { sizeof(cell) * 2, sid, 0 };
@@ -3558,7 +3581,7 @@ PyObject *sSendPlayerMessageToPlayer(PyObject *self, PyObject *args)
 {
 	int pid, sid;
 	char *msg = NULL;
-	PyArg_ParseTuple(args, "iis", &pid, &sid, &msg);
+	PyArg_ParseTuple(args, "iiO&", &pid, &sid, _stringToCP1252, &msg);
 
 	if (msg == NULL) Py_RETURN_NONE;
 	cell amxargs[4] = { sizeof(cell) * 3, pid, sid, 0 };
@@ -3578,7 +3601,7 @@ PyObject *sSendPlayerMessageToPlayer(PyObject *self, PyObject *args)
 PyObject *sSendRconCommand(PyObject *self, PyObject *args)
 {
 	char *cmd = NULL;
-	PyArg_ParseTuple(args, "s", &cmd);
+	PyArg_ParseTuple(args, "O&", _stringToCP1252, &cmd);
 
 	if (cmd == NULL) Py_RETURN_NONE;
 	cell amxargs[2] = { sizeof(cell), 0 };
@@ -3610,7 +3633,7 @@ PyObject *sSetCameraBehindPlayer(PyObject *self, PyObject *args)
 PyObject *sSetGameModeText(PyObject *self, PyObject *args)
 {
 	char *gmtext; int txtlen;
-	PyArg_ParseTuple(args, "s", &gmtext);
+	PyArg_ParseTuple(args, "O&", _stringToCP1252, &gmtext);
 	txtlen = strlen(gmtext) + 1;
 	cell amxargs[2];
 
@@ -3641,7 +3664,7 @@ PyObject *sSetMenuColumnHeader(PyObject *self, PyObject *args)
 {
 	int mid, col;
 	char *txt = NULL;
-	PyArg_ParseTuple(args, "iis", &mid, &col, &txt);
+	PyArg_ParseTuple(args, "iiO&", &mid, &col, _stringToCP1252, &txt);
 
 	if (txt == NULL) Py_RETURN_NONE;
 	cell amxargs[4] = { sizeof(cell) * 3, mid, col, 0 };
@@ -3673,6 +3696,7 @@ PyObject *sSetObjectMaterial(PyObject *self, PyObject *args)
 	int oid, midx, mid;
 	unsigned int matcol = 0; // TODO: TEST!
 	char *txd = NULL, *texture = NULL;
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "iiissI", &oid, &midx, &mid, &txd, &texture, &matcol);
 
 	if (txd == NULL || texture == NULL) Py_RETURN_NONE;
@@ -3696,7 +3720,7 @@ PyObject *sSetObjectMaterialText(PyObject *self, PyObject *args)
 	int oid, midx = 0, matsize = OBJECT_MATERIAL_SIZE_256x128, fontsize = 24, bold = 1, txtalig = 0;
 	unsigned int fontcol = 0xFFFFFFFF, backcol = 0; // TODO: TEST!
 	char *txt = NULL, *fontface = "Arial";
-	PyArg_ParseTuple(args, "is|iisiiIIi", &oid, &txt, &midx, &matsize, &fontface, &fontsize, &bold, &fontcol, &backcol, &txtalig);
+	PyArg_ParseTuple(args, "iO&|iisiiIIi", &oid, _stringToCP1252, &txt, &midx, &matsize, &fontface, &fontsize, &bold, &fontcol, &backcol, &txtalig);
 
 	if (txt == NULL) Py_RETURN_NONE;
 	cell amxargs[11] = { 10 * sizeof(cell), oid, 0, midx, matsize, 0, fontsize, bold, fontcol, backcol, txtalig };
@@ -3742,6 +3766,7 @@ PyObject *sSetPVarFloat(PyObject *self, PyObject *args)
 	char *string;
 	float value;
 
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "isf", &playerid, &string, &value);
 
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, amx_ftoc(value) };
@@ -3763,6 +3788,7 @@ PyObject *sSetPVarInt(PyObject *self, PyObject *args)
 	int playerid, value;
 	char *string;
 
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "isi", &playerid, &string, &value);
 
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, value };
@@ -3784,7 +3810,7 @@ PyObject *sSetPVarString(PyObject *self, PyObject *args)
 	int playerid;
 	char *string, *value;
 
-	PyArg_ParseTuple(args, "iss", &playerid, &string, &value);
+	PyArg_ParseTuple(args, "isO&", &playerid, &string, _stringToCP1252, &value);
 
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, 0 };
 
@@ -3878,7 +3904,7 @@ PyObject *sSetPlayerChatBubble(PyObject *self, PyObject *args)
 	PyObject *color;
 	float drawdist;
 	char *txt = NULL;
-	PyArg_ParseTuple(args, "isOfi", &pid, &txt, &color, &drawdist, &exp);
+	PyArg_ParseTuple(args, "iO&Ofi", &pid, _stringToCP1252, &txt, &color, &drawdist, &exp);
 	_getColor(color);
 	
 	cell amxargs[6] = { 5 * sizeof(cell), pid, 0, colcode, amx_ftoc(drawdist), exp };
@@ -4010,6 +4036,7 @@ PyObject *sSetPlayerName(PyObject *self, PyObject *args)
 {
 	int pid;
 	char *name = NULL;
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &pid, &name);
 	
 	cell amxargs[3] = { 2 * sizeof(cell), pid, 0 };
@@ -4030,6 +4057,7 @@ PyObject *sSetPlayerObjectMaterial(PyObject *self, PyObject *args)
 	int pid, oid, midx, mid;
 	unsigned int matcol = 0; // TODO: TEST!
 	char *txd = NULL, *texture = NULL;
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "iiiissI", &pid, &oid, &midx, &mid, &txd, &texture, &matcol);
 
 	if (txd == NULL || texture == NULL) Py_RETURN_NONE;
@@ -4053,7 +4081,7 @@ PyObject *sSetPlayerObjectMaterialText(PyObject *self, PyObject *args)
 	int pid, oid, midx = 0, matsize = OBJECT_MATERIAL_SIZE_256x128, fontsize = 24, bold = 1, txtalig = 0;
 	unsigned int fontcol = 0xFFFFFFFF, backcol = 0; // TODO: TEST!
 	char *txt = NULL, *fontface = "Arial";
-	PyArg_ParseTuple(args, "iis|iisiiIIi", &pid, &oid, &txt, &midx, &matsize, &fontface, &fontsize, &bold, &fontcol, &backcol, &txtalig);
+	PyArg_ParseTuple(args, "iiO&|iisiiIIi", &pid, &oid, _stringToCP1252, &txt, &midx, &matsize, &fontface, &fontsize, &bold, &fontcol, &backcol, &txtalig);
 
 	if (txt == NULL) Py_RETURN_NONE;
 	cell amxargs[12] = { 11 * sizeof(cell), pid, oid, 0, midx, matsize, 0, fontsize, bold, fontcol, backcol, txtalig };
@@ -4140,6 +4168,7 @@ PyObject *sSetPlayerShopName(PyObject *self, PyObject *args)
 {
 	int pid;
 	char *shop = NULL;
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &pid, &shop);
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, 0 };
@@ -4333,6 +4362,7 @@ PyObject *sSetVehicleNumberPlate(PyObject *self, PyObject *args)
 {
 	int vid;
 	char *plate = NULL;
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &vid, &plate);
 
 	cell amxargs[3] = { 2 * sizeof(cell), vid, 0 };
@@ -4465,7 +4495,7 @@ PyObject *sShowPlayerDialog(PyObject *self, PyObject *args)
 {
 	int pid, did, style;
 	char *caption = NULL, *info = NULL, *btn1 = NULL, *btn2 = NULL;
-	PyArg_ParseTuple(args, "iiissss", &pid, &did, &style, &caption, &info, &btn1, &btn2);
+	PyArg_ParseTuple(args, "iiiO&O&O&O&", &pid, &did, &style, _stringToCP1252, &caption, _stringToCP1252, &info, _stringToCP1252, &btn1, _stringToCP1252, &btn2);
 
 	cell amxargs[8] = { 7 * sizeof(cell), pid, did, style, 0, 0, 0, 0 };
 
@@ -4520,6 +4550,7 @@ PyObject *sStartRecordingPlayerData(PyObject *self, PyObject *args)
 {
 	int playerid, rectype;
 	char *recname;
+	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "iis", &playerid, &rectype, &recname);
 
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, rectype, 0 };
@@ -4639,7 +4670,7 @@ PyObject *sTextDrawCreate(PyObject *self, PyObject *args)
 {
 	float x, y;
 	char *txt = NULL;
-	PyArg_ParseTuple(args, "ffs", &x, &y, &txt);
+	PyArg_ParseTuple(args, "ffO&", &x, &y, _stringToCP1252, &txt);
 
 	cell amxargs[4] = { 3 * sizeof(cell), amx_ftoc(x), amx_ftoc(y), 0 };
 
@@ -4779,7 +4810,7 @@ PyObject *sTextDrawSetString(PyObject *self, PyObject *args)
 {
 	int txt;
 	char *string = NULL;
-	PyArg_ParseTuple(args, "is", &txt, &string);
+	PyArg_ParseTuple(args, "iO&", &txt, _stringToCP1252, &string);
 
 	cell amxargs[3] = { 2 * sizeof(cell), txt, 0 };
 
@@ -4870,7 +4901,7 @@ PyObject *sUpdate3DTextLabelText(PyObject *self, PyObject *args)
 	int t3d;
 	PyObject *color;
 	char *txt = NULL;
-	PyArg_ParseTuple(args, "iOs", &t3d, &color, &txt);
+	PyArg_ParseTuple(args, "iOO&", &t3d, &color, _stringToCP1252, &txt);
 	_getColor(color);
 
 	cell amxargs[4] = { 3 * sizeof(cell), t3d, colcode, 0 };
@@ -4891,7 +4922,7 @@ PyObject *sUpdatePlayer3DTextLabelText(PyObject *self, PyObject *args)
 	int pid, t3d;
 	PyObject *color;
 	char *txt = NULL;
-	PyArg_ParseTuple(args, "iiOs", &pid, &t3d, &color, &txt);
+	PyArg_ParseTuple(args, "iiOO&", &pid, &t3d, &color, _stringToCP1252, &txt);
 	_getColor(color);
 
 	cell amxargs[5] = { 4 * sizeof(cell), pid, t3d, colcode, 0 };
