@@ -1197,7 +1197,7 @@ Py_ssize_t _getRecursiveSize(PyObject *args)
 			PyTuple_Check(current_item)
 			|| PyList_Check(current_item)
 		)
-			total_size += _getRecursiveSize(current_item);
+			total_size += PySequence_Size(current_item);
 	}
 
 	return total_size;
