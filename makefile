@@ -17,7 +17,7 @@ COMPILE_FLAGS=-c -O3 -m32 -w -DLINUX -I./SDK/amx/ $(shell python-config --includ
 all: $(PROJ_SOURCE) $(OUTFILE)
 
 $(OUTFILE): $(PROJ_FILES)
-	$(GPP) -O3 -m32 -fshort-wchar -shared $(shell python-config --ldflags) -o $@ *.o
+	$(GPP) -O3 -m32 -fshort-wchar -shared $(shell python-config --ldflags | sed 's/x86_64/i386/') -o $@ *.o
 
 $(PROJ_FILES): $(PROJ_SOURCE) $(SDK_FILES)
 	$(GPP) $(COMPILE_FLAGS) *.cpp

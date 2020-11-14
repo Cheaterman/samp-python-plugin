@@ -78,7 +78,7 @@ cell _pyArgsToAMX(cell *amxargs, PyObject *pyargs, unsigned int start_from, bool
 				if(ret == 0)
 					ret = amxargs[current_amx_arg];
 			}
-			*pawn_address = PyLong_AsUnsignedLong(current_argument);
+			*pawn_address = PyLong_AsLong(current_argument);
 		}
 		else if(PyFloat_Check(current_argument))
 		{
@@ -1255,10 +1255,16 @@ PyObject *sCallNativeFunction(PyObject *self, PyObject *args)
 
 	// -1 because we don't put function in amxargs
 	cell release = _pyArgsToAMX(amxargs - 1, args, 1, true);
+
+	// Error in argument conversion - this should be checked everywhere
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell ret = amx_function(m_AMX, amxargs);
 
 	if(release)
 		amx_Release(m_AMX, release);
+
 	free(amxargs);
 
 	return Py_BuildValue("i", ret);
