@@ -74,7 +74,7 @@ PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 	unsigned long long curtickcount = GetTickCount();
 
 	// timers and function invokes
-	if (curtickcount > lasttickcount) // prevent check if GetTickCount value hasn't changed
+	if (curtickcount - lasttickcount > 0) // prevent check if GetTickCount value hasn't changed
 	{
 		m_MainLock->Lock();
 		if (!m_TimerList.empty())
