@@ -318,9 +318,6 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxUnload( AMX *amx )
 		struct timeval tv;
 		if(gettimeofday(&tv, NULL) != 0) return 0;
 
-		return (
-			((unsigned long long)tv.tv_sec * 1000ULL)
-			+ (unsigned long long)(tv.tv_usec / 1000)
-		);
+		return (tv.tv_sec * 1000) + (tv.tv_usec / 1000ULL);
 	}
 #endif
