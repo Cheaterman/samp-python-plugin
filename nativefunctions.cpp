@@ -5406,7 +5406,7 @@ cell AMX_NATIVE_CALL n_OnRconCommand(AMX *amx, cell *params)
 	char *cmd = _getString(m_AMX, params[1]);
 
 	PyEnsureGIL;
-	PyObject *o = Py_BuildValue("N", PyUnicode_Decode(cmd, strlen(cmd), "cp1252", "strict"));
+	PyObject *o = Py_BuildValue("(N)", PyUnicode_Decode(cmd, strlen(cmd), "cp1252", "strict"));
 	int ret = _pyCallAll("OnRconCommand", o);
 	Py_DECREF(o);
 	PyReleaseGIL;
