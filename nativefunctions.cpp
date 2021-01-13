@@ -869,6 +869,10 @@ PyObject *sPrintf(PyObject *self, PyObject *args)
 {
 	char *str = NULL;
 	PyArg_ParseTuple(args, "s", &str);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	logprintf(str);
 
 	//PyMem_Free(str);
@@ -881,6 +885,9 @@ PyObject *sAddMenuItem(PyObject *self, PyObject *args)
 	int mid, col;
 	char *title;
 	PyArg_ParseTuple(args, "iiO&", &mid, &col, _stringToCP1252, &title);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), mid, col, 0 };
 
@@ -902,6 +909,9 @@ PyObject *sAddPlayerClass(PyObject *self, PyObject *args)
 	float x, y, z, angle;
 	PyArg_ParseTuple(args, "iffffiiiiii", &skin, &x, &y, &z, &angle, &w1, &w1a, &w2, &w2a, &w3, &w3a);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[12] = { 11 * sizeof(cell), skin, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(angle), w1, w1a, w2, w2a, w3, w3a };
 	return Py_BuildValue("i", _addPlayerClass(m_AMX, amxargs));
 }
@@ -912,6 +922,9 @@ PyObject *sAddPlayerClassEx(PyObject *self, PyObject *args)
 	float x, y, z, angle;
 	PyArg_ParseTuple(args, "iiffffiiiiii", &tid, &skin, &x, &y, &z, &angle, &w1, &w1a, &w2, &w2a, &w3, &w3a);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[13] = { 12 * sizeof(cell), tid, skin, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(angle), w1, w1a, w2, w2a, w3, w3a };
 	return Py_BuildValue("i", _addPlayerClassEx(m_AMX, amxargs));
 }
@@ -921,6 +934,9 @@ PyObject *sAddStaticPickup(PyObject *self, PyObject *args)
 	int model, type, virtworld = 0;
 	float x, y, z;
 	PyArg_ParseTuple(args, "iifff|i", &model, &type, &x, &y, &z, &virtworld);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[7] = { 6 * sizeof(cell), model, type, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), virtworld };
 	return Py_BuildValue("i", _addStaticPickup(m_AMX, amxargs));
@@ -933,6 +949,9 @@ PyObject *sAddStaticVehicle(PyObject *self, PyObject *args)
 
 	PyArg_ParseTuple(args, "iffffii", &modelid, &x, &y, &z, &angle, &color1, &color2);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[8] = { 7 * sizeof(cell), modelid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(angle), color1, color2 };
 	return Py_BuildValue("i", _addStaticVehicle(m_AMX, amxargs));
 }
@@ -944,6 +963,9 @@ PyObject *sAddStaticVehicleEx(PyObject *self, PyObject *args)
 
 	PyArg_ParseTuple(args, "iffffiii", &modelid, &x, &y, &z, &angle, &color1, &color2, &resp_del);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[9] = { 8 * sizeof(cell), modelid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(angle), color1, color2, resp_del };
 	return Py_BuildValue("i", _addStaticVehicleEx(m_AMX, amxargs));
 }
@@ -952,6 +974,9 @@ PyObject *sAddVehicleComponent(PyObject *self, PyObject *args)
 {
 	int vehicleid, componentid;
 	PyArg_ParseTuple(args, "ii", &vehicleid, &componentid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vehicleid, componentid };
 	_addVehicleComponent(m_AMX, amxargs);
@@ -963,6 +988,9 @@ PyObject *sAllowAdminTeleport(PyObject *self, PyObject *args)
 	int allow;
 	PyArg_ParseTuple(args, "i", &allow);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), allow };
 	_allowAdminTeleport(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -973,6 +1001,9 @@ PyObject *sAllowInteriorWeapons(PyObject *self, PyObject *args)
 	int allow;
 	PyArg_ParseTuple(args, "i", &allow);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), allow };
 	_allowInteriorWeapons(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -982,6 +1013,9 @@ PyObject *sAllowPlayerTeleport(PyObject *self, PyObject *args)
 {
 	int pid, allow;
 	PyArg_ParseTuple(args, "ii", &pid, &allow);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, allow};
 	_allowPlayerTeleport(m_AMX, amxargs);
@@ -995,6 +1029,9 @@ PyObject *sApplyAnimation(PyObject *self, PyObject *args)
 	float fdelta;
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "issfiiiii|i", &playerid, &animlib, &animname, &fdelta, &loop, &lockx, &locky, &freeze, &time, &forcesync);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[11] = { 10 * sizeof(cell), playerid, 0, 0, amx_ftoc(fdelta), loop, lockx, locky, freeze, time, forcesync };
 
@@ -1022,6 +1059,9 @@ PyObject *sAttach3DTextLabelToPlayer(PyObject *self, PyObject *args)
 
 	PyArg_ParseTuple(args, "iifff", &t3id, &pid, &ox, &oy, &oz);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), t3id, pid, amx_ftoc(ox), amx_ftoc(oy), amx_ftoc(oz) };
 	_attach3DTextLabelToPlayer(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1034,6 +1074,9 @@ PyObject *sAttach3DTextLabelToVehicle(PyObject *self, PyObject *args)
 
 	PyArg_ParseTuple(args, "iifff", &t3id, &vid, &ox, &oy, &oz);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), t3id, vid, amx_ftoc(ox), amx_ftoc(oy), amx_ftoc(oz) };
 	_attach3DTextLabelToVehicle(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1044,6 +1087,9 @@ PyObject *sAttachCameraToObject(PyObject *self, PyObject *args)
 	int pid, oid;
 	PyArg_ParseTuple(args, "ii", &pid, &oid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, oid};
 	_attachCameraToObject(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1053,6 +1099,9 @@ PyObject *sAttachCameraToPlayerObject(PyObject *self, PyObject *args)
 {
 	int pid, poid;
 	PyArg_ParseTuple(args, "ii", &pid, &poid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, poid};
 	_attachCameraToPlayerObject(m_AMX, amxargs);
@@ -1066,6 +1115,9 @@ PyObject *sAttachObjectToObject(PyObject *self, PyObject *args)
 
 	PyArg_ParseTuple(args, "iiffffff|i", &oid, &pid, &ox, &oy, &oz, &rx, &ry, &rz, &sync);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[10] = { 9 * sizeof(cell), oid, pid, amx_ftoc(ox), amx_ftoc(oy), amx_ftoc(oz), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz), sync };
 	_attachObjectToObject(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1077,6 +1129,9 @@ PyObject *sAttachObjectToPlayer(PyObject *self, PyObject *args)
 	float ox, oy, oz, rx, ry, rz;
 
 	PyArg_ParseTuple(args, "iiffffff", &oid, &pid, &ox, &oy, &oz, &rx, &ry, &rz);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[9] = { 8 * sizeof(cell), oid, pid, amx_ftoc(ox), amx_ftoc(oy), amx_ftoc(oz), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz) };
 	_attachObjectToPlayer(m_AMX, amxargs);
@@ -1090,6 +1145,9 @@ PyObject *sAttachObjectToVehicle(PyObject *self, PyObject *args)
 
 	PyArg_ParseTuple(args, "iiffffff", &oid, &vid, &ox, &oy, &oz, &rx, &ry, &rz);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[9] = { 8 * sizeof(cell), oid, vid, amx_ftoc(ox), amx_ftoc(oy), amx_ftoc(oz), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz) };
 	_attachObjectToVehicle(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1101,6 +1159,9 @@ PyObject *sAttachPlayerObjectToPlayer(PyObject *self, PyObject *args)
 	float ox, oy, oz, rx, ry, rz;
 
 	PyArg_ParseTuple(args, "iiiffffff", &op, &oid, &ap, &ox, &oy, &oz, &rx, &ry, &rz);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[10] = { 9 * sizeof(cell), op, oid, ap, amx_ftoc(ox), amx_ftoc(oy), amx_ftoc(oz), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz) };
 	_attachPlayerObjectToPlayer(m_AMX, amxargs);
@@ -1114,6 +1175,9 @@ PyObject *sAttachPlayerObjectToVehicle(PyObject *self, PyObject *args)
 
 	PyArg_ParseTuple(args, "iiiffffff", &pid, &oid, &ap, &ox, &oy, &oz, &rx, &ry, &rz);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[10] = { 9 * sizeof(cell), pid, oid, ap, amx_ftoc(ox), amx_ftoc(oy), amx_ftoc(oz), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz) };
 	_attachPlayerObjectToVehicle(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1123,6 +1187,9 @@ PyObject *sAttachTrailerToVehicle(PyObject *self, PyObject *args)
 {
 	int tid, vid;
 	PyArg_ParseTuple(args, "ii", &tid, &vid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), tid, vid };
 	_attachTrailerToVehicle(m_AMX, amxargs);
@@ -1135,6 +1202,9 @@ PyObject *sBan(PyObject *self, PyObject *args)
 	int playerid;
 	PyArg_ParseTuple(args, "i", &playerid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), playerid };
 	_ban(m_AMX, amxargs);
 
@@ -1146,6 +1216,9 @@ PyObject *sBanEx(PyObject *self, PyObject *args)
 	int playerid;
 	char *reason;
 	PyArg_ParseTuple(args, "iO&", &playerid, _stringToCP1252, &reason);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
 
@@ -1276,6 +1349,9 @@ PyObject *sCancelEdit(PyObject *self, PyObject *args)
 	int playerid;
 	PyArg_ParseTuple(args, "i", &playerid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), playerid };
 	_cancelEdit(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1285,6 +1361,9 @@ PyObject *sCancelSelectTextDraw(PyObject *self, PyObject *args)
 {
 	int playerid;
 	PyArg_ParseTuple(args, "i", &playerid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), playerid };
 	_cancelSelectTextDraw(m_AMX, amxargs);
@@ -1296,6 +1375,9 @@ PyObject *sChangeVehicleColor(PyObject *self, PyObject *args)
 	int vehid, color1, color2;
 	PyArg_ParseTuple(args, "iii", &vehid, &color1, &color2);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), vehid, color1, color2 };
 	_changeVehicleColor(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1305,6 +1387,9 @@ PyObject *sChangeVehiclePaintjob(PyObject *self, PyObject *args)
 {
 	int vehid, pid;
 	PyArg_ParseTuple(args, "ii", &vehid, &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vehid, pid };
 	_changeVehiclePaintjob(m_AMX, amxargs);
@@ -1316,6 +1401,9 @@ PyObject *sClearAnimations(PyObject *self, PyObject *args)
 	int playerid;
 	PyArg_ParseTuple(args, "i", &playerid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), playerid };
 	_clearAnimations(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1326,6 +1414,9 @@ PyObject *sConnectNPC(PyObject *self, PyObject *args)
 	char *name, *script;
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "ss", &name, &script);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), 0, 0 };
 
@@ -1353,6 +1444,10 @@ PyObject *sCreate3DTextLabel(PyObject *self, PyObject *args)
 	char *text;
 	PyObject *color;
 	PyArg_ParseTuple(args, "O&Offffib", _stringToCP1252, &text, &color, &x, &y, &z, &drawdist, &virtworld, &tlos);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[9] = { 8 * sizeof(cell), 0, colcode, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(drawdist), virtworld, tlos };
@@ -1377,6 +1472,9 @@ PyObject *sCreateExplosion(PyObject *self, PyObject *args)
 	float x, y, z, radius;
 	PyArg_ParseTuple(args, "fffif", &x, &y, &z, &type, &radius);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), type, amx_ftoc(radius) };
 	_createExplosion(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1388,6 +1486,9 @@ PyObject *sCreateMenu(PyObject *self, PyObject *args)
 	float x, y, c1, c2;
 	char *title;
 	PyArg_ParseTuple(args, "O&iffff", _stringToCP1252, &title, &cols, &x, &y, &c1, &c2);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[7] = { 6 * sizeof(cell), 0, cols, amx_ftoc(x), amx_ftoc(y), amx_ftoc(c1), amx_ftoc(c2) };
 
@@ -1410,6 +1511,9 @@ PyObject *sCreateObject(PyObject *self, PyObject *args)
 	float x, y, z, rx, ry, rz, drawdist = 0.0;
 	PyArg_ParseTuple(args, "iffffff|f", &modelid, &x, &y, &z, &rx, &ry, &rz, &drawdist);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[9] = { 8 * sizeof(cell), modelid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz), amx_ftoc(drawdist) };
 	return Py_BuildValue("i", _createObject(m_AMX, amxargs));
 }
@@ -1419,6 +1523,9 @@ PyObject *sCreatePickup(PyObject *self, PyObject *args)
 	int model, type, virtworld = 0;
 	float x, y, z;
 	PyArg_ParseTuple(args, "iifff|i", &model, &type, &x, &y, &z, &virtworld);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[7] = { 6 * sizeof(cell), model, type, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), virtworld };
 	return Py_BuildValue("i", _createPickup(m_AMX, amxargs));
@@ -1431,6 +1538,10 @@ PyObject *sCreatePlayer3DTextLabel(PyObject *self, PyObject *args)
 	char *text;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iO&Offffiib", &pid, _stringToCP1252, &text, &color, &x, &y, &z, &drawdist, &ap, &av, &tlos);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[11] = { 10 * sizeof(cell), pid, 0, colcode, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(drawdist), ap, av, tlos };
@@ -1454,6 +1565,9 @@ PyObject *sCreatePlayerObject(PyObject *self, PyObject *args)
 	float x, y, z, rx, ry, rz, drawdist = 0.0;
 	PyArg_ParseTuple(args, "iiffffff|f", &playerid, &modelid, &x, &y, &z, &rx, &ry, &rz, &drawdist);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[10] = { 9 * sizeof(cell), playerid, modelid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz), amx_ftoc(drawdist) };
 	return Py_BuildValue("i", _createPlayerObject(m_AMX, amxargs));
 }
@@ -1464,6 +1578,9 @@ PyObject *sCreateVehicle(PyObject *self, PyObject *args)
 	float x, y, z, angle;
 
 	PyArg_ParseTuple(args, "iffffiii", &modelid, &x, &y, &z, &angle, &color1, &color2, &resp_del);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[9] = { 8 * sizeof(cell), modelid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(angle), color1, color2, resp_del };
 	return Py_BuildValue("i", _createVehicle(m_AMX, amxargs));
@@ -1476,6 +1593,9 @@ PyObject *sDelete3DTextLabel(PyObject *self, PyObject *args)
 	int id;
 	PyArg_ParseTuple(args, "i", &id);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), id };
 	return Py_BuildValue("i", _delete3DTextLabel(m_AMX, amxargs));
 }
@@ -1487,6 +1607,9 @@ PyObject *sDeletePVar(PyObject *self, PyObject *args)
 
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &playerid, &string);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
 
@@ -1507,6 +1630,9 @@ PyObject *sDeletePlayer3DTextLabel(PyObject *self, PyObject *args)
 	int pid, id;
 	PyArg_ParseTuple(args, "ii", &pid, &id);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, id };
 	return Py_BuildValue("i", _deletePlayer3DTextLabel(m_AMX, amxargs));
 }
@@ -1517,6 +1643,9 @@ PyObject *sDestroyMenu(PyObject *self, PyObject *args)
 	int mid;
 	PyArg_ParseTuple(args, "i", &mid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), mid };
 	return Py_BuildValue("i", _destroyMenu(m_AMX, amxargs));
 }
@@ -1525,6 +1654,9 @@ PyObject *sDestroyObject(PyObject *self, PyObject *args)
 {
 	int oid;
 	PyArg_ParseTuple(args, "i", &oid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), oid };
 	_destroyObject(m_AMX, amxargs);
@@ -1536,6 +1668,9 @@ PyObject *sDestroyPickup(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	_destroyPickup(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1545,6 +1680,9 @@ PyObject *sDestroyPlayerObject(PyObject *self, PyObject *args)
 {
 	int pid, oid;
 	PyArg_ParseTuple(args, "ii", &pid, &oid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, oid };
 	_destroyPlayerObject(m_AMX, amxargs);
@@ -1556,6 +1694,9 @@ PyObject *sDestroyVehicle(PyObject *self, PyObject *args)
 	int vid;
 	PyArg_ParseTuple(args, "i", &vid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), vid };
 	_destroyVehicle(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1565,6 +1706,9 @@ PyObject *sDetachTrailerFromVehicle(PyObject *self, PyObject *args)
 {
 	int vid;
 	PyArg_ParseTuple(args, "i", &vid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), vid };
 	_detachTrailerFromVehicle(m_AMX, amxargs);
@@ -1583,6 +1727,9 @@ PyObject *sDisableMenu(PyObject *self, PyObject *args)
 	int mid;
 	PyArg_ParseTuple(args, "i", &mid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), mid };
 	_disableMenu(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1592,6 +1739,9 @@ PyObject *sDisableMenuRow(PyObject *self, PyObject *args)
 {
 	int mid, row;
 	PyArg_ParseTuple(args, "ii", &mid, &row);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), mid, row };
 	_disableMenuRow(m_AMX, amxargs);
@@ -1610,6 +1760,9 @@ PyObject *sDisablePlayerCheckpoint(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	_disablePlayerCheckpoint(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1619,6 +1772,9 @@ PyObject *sDisablePlayerRaceCheckpoint(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	_disablePlayerRaceCheckpoint(m_AMX, amxargs);
@@ -1631,6 +1787,9 @@ PyObject *sEditObject(PyObject *self, PyObject *args)
 	int playerid, objectid;
 	PyArg_ParseTuple(args, "ii", &playerid, &objectid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, objectid };
 	_editObject(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1640,6 +1799,9 @@ PyObject *sEditPlayerObject(PyObject *self, PyObject *args)
 {
 	int playerid, objectid;
 	PyArg_ParseTuple(args, "ii", &playerid, &objectid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, objectid };
 	_editPlayerObject(m_AMX, amxargs);
@@ -1651,6 +1813,9 @@ PyObject *sEditAttachedObject(PyObject *self, PyObject *args)
 	int playerid, idx;
 	PyArg_ParseTuple(args, "ii", &playerid, &idx);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, idx };
 	_editAttachedObject(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1661,6 +1826,9 @@ PyObject *sEnableStuntBonusForAll(PyObject *self, PyObject *args)
 	int enable;
 	PyArg_ParseTuple(args, "i", &enable);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), enable };
 	_enableStuntBonusForAll(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1670,6 +1838,9 @@ PyObject *sEnableStuntBonusForPlayer(PyObject *self, PyObject *args)
 {
 	int playerid, enable;
 	PyArg_ParseTuple(args, "ii", &playerid, &enable);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, enable };
 	_enableStuntBonusForPlayer(m_AMX, amxargs);
@@ -1692,6 +1863,9 @@ PyObject *sForceClassSelection(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	_forceClassSelection(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1710,6 +1884,9 @@ PyObject *sGameTextForAll(PyObject *self, PyObject *args)
 	int time, style;
 	char *string;
 	PyArg_ParseTuple(args, "O&ii", _stringToCP1252, &string, &time, &style);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), 0, time, style };
 
@@ -1731,6 +1908,9 @@ PyObject *sGameTextForPlayer(PyObject *self, PyObject *args)
 	char *string;
 	PyArg_ParseTuple(args, "iO&ii", &playerid, _stringToCP1252, &string, &time, &style);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, time, style };
 
 	int len = strlen(string) + 1;
@@ -1750,6 +1930,9 @@ PyObject *sGangZoneCreate(PyObject *self, PyObject *args)
 	float minx, miny, maxx, maxy;
 	PyArg_ParseTuple(args, "ffff", &minx, &miny, &maxx, &maxy);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), amx_ftoc(minx), amx_ftoc(miny), amx_ftoc(maxx), amx_ftoc(maxy) };
 
 	return Py_BuildValue("i", _gangZoneCreate(m_AMX, amxargs));
@@ -1759,6 +1942,9 @@ PyObject *sGangZoneDestroy(PyObject *self, PyObject *args)
 {
 	int zone;
 	PyArg_ParseTuple(args, "i", &zone);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), zone };
 	_gangZoneDestroy(m_AMX, amxargs);
@@ -1770,6 +1956,9 @@ PyObject *sGangZoneFlashForAll(PyObject *self, PyObject *args)
 	int zone;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iO", &zone, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	_getColor(color);
 
@@ -1786,6 +1975,9 @@ PyObject *sGangZoneFlashForPlayer(PyObject *self, PyObject *args)
 	PyObject *color;
 	PyArg_ParseTuple(args, "iiO", &playerid, &zone, &color);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[4] = { sizeof(cell) * 3, playerid, zone, colcode };
@@ -1800,6 +1992,9 @@ PyObject *sGangZoneHideForAll(PyObject *self, PyObject *args)
 	int zone;
 	PyArg_ParseTuple(args, "i", &zone);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), zone };
 	_gangZoneHideForAll(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1809,6 +2004,9 @@ PyObject *sGangZoneHideForPlayer(PyObject *self, PyObject *args)
 {
 	int playerid, zone;
 	PyArg_ParseTuple(args, "ii", &playerid, &zone);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, zone };
 	_gangZoneHideForPlayer(m_AMX, amxargs);
@@ -1820,6 +2018,9 @@ PyObject *sGangZoneShowForAll(PyObject *self, PyObject *args)
 	int zone;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iO", &zone, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	_getColor(color);
 
@@ -1837,6 +2038,9 @@ PyObject *sGangZoneShowForPlayer(PyObject *self, PyObject *args)
 	PyObject *color;
 	PyArg_ParseTuple(args, "iiO", &playerid, &zone, &color);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[4] = { sizeof(cell) * 3, playerid, zone, colcode };
@@ -1851,6 +2055,9 @@ PyObject *sGangZoneStopFlashForAll(PyObject *self, PyObject *args)
 	int zone;
 	PyArg_ParseTuple(args, "i", &zone);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), zone };
 	_gangZoneStopFlashForAll(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1861,6 +2068,9 @@ PyObject *sGangZoneStopFlashForPlayer(PyObject *self, PyObject *args)
 	int playerid, zone;
 	PyArg_ParseTuple(args, "ii", &playerid, &zone);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, zone };
 	_gangZoneStopFlashForPlayer(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -1870,6 +2080,9 @@ PyObject *sGetAnimationName(PyObject *self, PyObject *args)
 {
 	int index;
 	PyArg_ParseTuple(args, "i", &index);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell *stranimlib, *stranimname;
 
@@ -1921,6 +2134,9 @@ PyObject *sGetObjectPos(PyObject *self, PyObject *args)
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &oid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), oid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
 	amx_Allot(m_AMX, 1, amxargs + 3, ref_addr + 1);
@@ -1939,6 +2155,9 @@ PyObject *sGetObjectRot(PyObject *self, PyObject *args)
 	int oid;
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &oid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), oid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -1960,6 +2179,9 @@ PyObject *sGetPVarFloat(PyObject *self, PyObject *args)
 
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &playerid, &string);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
 
@@ -1983,6 +2205,9 @@ PyObject *sGetPVarInt(PyObject *self, PyObject *args)
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &playerid, &string);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), playerid, 0 };
 
 	int len = strlen(string) + 1;
@@ -2004,6 +2229,9 @@ PyObject *sGetPVarString(PyObject *self, PyObject *args)
 
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &playerid, &string);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 2048 };
 
@@ -2033,6 +2261,9 @@ PyObject *sGetPlayerAmmo(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerAmmo(m_AMX, amxargs));
 }
@@ -2041,6 +2272,9 @@ PyObject *sGetPlayerAnimationIndex(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 
@@ -2052,6 +2286,9 @@ PyObject *sGetPlayerArmour(PyObject *self, PyObject *args)
 	int pid;
 	cell *ref_addr;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, &ref_addr);
@@ -2067,6 +2304,9 @@ PyObject *sGetPlayerCameraFrontVector(PyObject *self, PyObject *args)
 	int playerid;
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &playerid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2086,6 +2326,9 @@ PyObject *sGetPlayerCameraMode(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 
 	return Py_BuildValue("i", _getPlayerCameraMode(m_AMX, amxargs));
@@ -2096,6 +2339,9 @@ PyObject *sGetPlayerCameraPos(PyObject *self, PyObject *args)
 	int playerid;
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &playerid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2116,6 +2362,9 @@ PyObject *sGetPlayerColor(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerColor(m_AMX, amxargs));
 }
@@ -2125,6 +2374,9 @@ PyObject *sGetPlayerDistanceFromPoint(PyObject *self, PyObject *args)
 	int pid;
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &pid, &x, &y, &z);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	cell ret = _getPlayerDistanceFromPoint(m_AMX, amxargs);
@@ -2136,6 +2388,9 @@ PyObject *sGetPlayerDrunkLevel(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerDrunkLevel(m_AMX, amxargs));
 }
@@ -2145,6 +2400,9 @@ PyObject *sGetPlayerFacingAngle(PyObject *self, PyObject *args)
 	int pid;
 	cell *ref_addr;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, &ref_addr);
@@ -2160,6 +2418,9 @@ PyObject *sGetPlayerFightingStyle(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerFightingStyle(m_AMX, amxargs));
 }
@@ -2169,6 +2430,9 @@ PyObject *sGetPlayerHealth(PyObject *self, PyObject *args)
 	int pid;
 	cell *ref_addr;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, &ref_addr);
@@ -2184,6 +2448,9 @@ PyObject *sGetPlayerInterior(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerInterior(m_AMX, amxargs));
 }
@@ -2192,6 +2459,9 @@ PyObject *sGetPlayerIp(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell *strip;
 	cell amxargs[4] = { 3 * sizeof(cell), pid, 0, 16 };
@@ -2215,6 +2485,9 @@ PyObject *sGetPlayerKeys(PyObject *self, PyObject *args)
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &playerid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
 	amx_Allot(m_AMX, 1, amxargs + 3, ref_addr + 1);
@@ -2233,6 +2506,9 @@ PyObject *sGetPlayerMenu(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerMenu(m_AMX, amxargs));
 }
@@ -2242,6 +2518,9 @@ PyObject *sGetPlayerMoney(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerMoney(m_AMX, amxargs));
 }
@@ -2250,6 +2529,9 @@ PyObject *sGetPlayerName(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell *strname;
 	cell amxargs[4] = { 3 * sizeof(cell), pid, 0, MAX_PLAYER_NAME };
@@ -2271,6 +2553,9 @@ PyObject *sGetPlayerNetworkStats(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell *strretstr;
 
@@ -2296,6 +2581,9 @@ PyObject *sGetPlayerObjectPos(PyObject *self, PyObject *args)
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "ii", &playerid, &oid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), playerid, oid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 3, ref_addr);
 	amx_Allot(m_AMX, 1, amxargs + 4, ref_addr + 1);
@@ -2315,6 +2603,9 @@ PyObject *sGetPlayerObjectRot(PyObject *self, PyObject *args)
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "ii", &playerid, &oid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), playerid, oid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 3, ref_addr);
 	amx_Allot(m_AMX, 1, amxargs + 4, ref_addr + 1);
@@ -2333,6 +2624,9 @@ PyObject *sGetPlayerPing(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerPing(m_AMX, amxargs));
 }
@@ -2342,6 +2636,9 @@ PyObject *sGetPlayerPos(PyObject *self, PyObject *args)
 	int playerid;
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &playerid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2361,6 +2658,9 @@ PyObject *sGetPlayerScore(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerScore(m_AMX, amxargs));
 }
@@ -2369,6 +2669,9 @@ PyObject *sGetPlayerSkin(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerSkin(m_AMX, amxargs));
@@ -2379,6 +2682,9 @@ PyObject *sGetPlayerSpecialAction(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerSpecialAction(m_AMX, amxargs));
 }
@@ -2387,6 +2693,9 @@ PyObject *sGetPlayerState(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerState(m_AMX, amxargs));
@@ -2397,6 +2706,9 @@ PyObject *sGetPlayerSurfingObjectID(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerSurfingObjectID(m_AMX, amxargs));
 }
@@ -2405,6 +2717,9 @@ PyObject *sGetPlayerSurfingVehicleID(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerSurfingVehicleID(m_AMX, amxargs));
@@ -2415,6 +2730,9 @@ PyObject *sGetPlayerTargetPlayer(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerTargetPlayer(m_AMX, amxargs));
 }
@@ -2423,6 +2741,9 @@ PyObject *sGetPlayerTeam(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerTeam(m_AMX, amxargs));
@@ -2433,6 +2754,9 @@ PyObject *sGetPlayerTime(PyObject *self, PyObject *args)
 	int playerid;
 	cell *ref_addr[2];
 	PyArg_ParseTuple(args, "i", &playerid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2451,6 +2775,9 @@ PyObject *sGetPlayerVehicleID(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerVehicleID(m_AMX, amxargs));
 }
@@ -2459,6 +2786,9 @@ PyObject *sGetPlayerVehicleSeat(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerVehicleSeat(m_AMX, amxargs));
@@ -2469,6 +2799,9 @@ PyObject *sGetPlayerVelocity(PyObject *self, PyObject *args)
 	int playerid;
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &playerid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2487,6 +2820,9 @@ PyObject *sGetPlayerVersion(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell *strretstr;
 
@@ -2511,6 +2847,9 @@ PyObject *sGetPlayerVirtualWorld(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerVirtualWorld(m_AMX, amxargs));
 }
@@ -2519,6 +2858,9 @@ PyObject *sGetPlayerWantedLevel(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerWantedLevel(m_AMX, amxargs));
@@ -2529,6 +2871,9 @@ PyObject *sGetPlayerWeapon(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerWeapon(m_AMX, amxargs));
 }
@@ -2538,6 +2883,9 @@ PyObject *sGetPlayerWeaponData(PyObject *self, PyObject *args)
 	int playerid, slot;
 	cell *ref_addr[2];
 	PyArg_ParseTuple(args, "ii", &playerid, &slot);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, slot, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 3, ref_addr);
@@ -2555,6 +2903,9 @@ PyObject *sGetPlayerWeaponState(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _getPlayerWeaponState(m_AMX, amxargs));
@@ -2574,6 +2925,9 @@ PyObject *sGetVehicleComponentInSlot(PyObject *self, PyObject *args)
 	int pid, slot;
 	PyArg_ParseTuple(args, "ii", &pid, &slot);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, slot };
 	return Py_BuildValue("i", _getVehicleComponentInSlot(m_AMX, amxargs));
 }
@@ -2582,6 +2936,9 @@ PyObject *sGetVehicleComponentType(PyObject *self, PyObject *args)
 {
 	int comp;
 	PyArg_ParseTuple(args, "i", &comp);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), comp };
 	return Py_BuildValue("i", _getVehicleComponentType(m_AMX, amxargs));
@@ -2592,6 +2949,9 @@ PyObject *sGetVehicleDamageStatus(PyObject *self, PyObject *args)
 	int vehicleid;
 	cell *ref_addr[2];
 	PyArg_ParseTuple(args, "i", &vehicleid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[6] = { 5 * sizeof(cell), vehicleid, 0, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2613,6 +2973,9 @@ PyObject *sGetVehicleDistanceFromPoint(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &vid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), vid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	cell ret = _getVehicleDistanceFromPoint(m_AMX, amxargs);
 	return Py_BuildValue("f", amx_ctof(ret));
@@ -2623,6 +2986,9 @@ PyObject *sGetVehicleHealth(PyObject *self, PyObject *args)
 	int vid;
 	cell *ref_addr;
 	PyArg_ParseTuple(args, "i", &vid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vid, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, &ref_addr);
@@ -2638,6 +3004,9 @@ PyObject *sGetVehicleModel(PyObject *self, PyObject *args)
 	int vid;
 	PyArg_ParseTuple(args, "i", &vid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), vid };
 	return Py_BuildValue("i", _getVehicleModel(m_AMX, amxargs));
 }
@@ -2647,6 +3016,9 @@ PyObject *sGetVehicleModelInfo(PyObject *self, PyObject *args)
 	int vmodel, itype;
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "ii", &vmodel, &itype);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[6] = { 5 * sizeof(cell), vmodel, itype, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 3, ref_addr);
@@ -2667,6 +3039,9 @@ PyObject *sGetVehiclePos(PyObject *self, PyObject *args)
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &vehicleid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), vehicleid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
 	amx_Allot(m_AMX, 1, amxargs + 3, ref_addr + 1);
@@ -2685,6 +3060,9 @@ PyObject *sGetVehicleRotationQuat(PyObject *self, PyObject *args)
 	int vehicleid;
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &vehicleid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), vehicleid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2705,6 +3083,9 @@ PyObject *sGetVehicleTrailer(PyObject *self, PyObject *args)
 	int vid;
 	PyArg_ParseTuple(args, "i", &vid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), vid };
 	return Py_BuildValue("i", _getVehicleTrailer(m_AMX, amxargs));
 }
@@ -2714,6 +3095,9 @@ PyObject *sGetVehicleVelocity(PyObject *self, PyObject *args)
 	int playerid;
 	cell *ref_addr[3];
 	PyArg_ParseTuple(args, "i", &playerid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), playerid, 0, 0, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2733,6 +3117,9 @@ PyObject *sGetVehicleVirtualWorld(PyObject *self, PyObject *args)
 	int vid;
 	PyArg_ParseTuple(args, "i", &vid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), vid };
 	return Py_BuildValue("i", _getVehicleVirtualWorld(m_AMX, amxargs));
 }
@@ -2742,6 +3129,9 @@ PyObject *sGetVehicleZAngle(PyObject *self, PyObject *args)
 	int vid;
 	cell *ref_addr[1];
 	PyArg_ParseTuple(args, "i", &vid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vid, 0 };
 	amx_Allot(m_AMX, 1, amxargs + 2, ref_addr);
@@ -2758,6 +3148,9 @@ PyObject *sGetWeaponName(PyObject *self, PyObject *args)
 {
 	int wid;
 	PyArg_ParseTuple(args, "i", &wid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell *strname;
 	cell amxargs[4] = { 3 * sizeof(cell), wid, 0, 32 };
@@ -2783,6 +3176,9 @@ PyObject *sGivePlayerMoney(PyObject *self, PyObject *args)
 	int pid, money;
 	PyArg_ParseTuple(args, "ii", &pid, &money);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, money };
 	 _givePlayerMoney(m_AMX, amxargs);
 	 Py_RETURN_NONE;
@@ -2792,6 +3188,9 @@ PyObject *sGivePlayerWeapon(PyObject *self, PyObject *args)
 {
 	int pid, wid, ammo;
 	PyArg_ParseTuple(args, "iii", &pid, &wid, &ammo);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, wid, ammo };
 	_givePlayerWeapon(m_AMX, amxargs);
@@ -2805,6 +3204,9 @@ PyObject *sHideMenuForPlayer(PyObject *self, PyObject *args)
 	int mid, pid;
 	PyArg_ParseTuple(args, "ii", &mid, &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), mid, pid };
 	_hideMenuForPlayer(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -2817,6 +3219,9 @@ PyObject *sInterpolateCameraPos(PyObject *self, PyObject *args)
 	float fx, fy, fz, tx, ty, tz;
 	PyArg_ParseTuple(args, "iffffffi|i", &pid, &fx, &fy, &fz, &tx, &ty, &tz, &time, &cut);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[10] = { 9 * sizeof(cell), pid, amx_ftoc(fx), amx_ftoc(fy), amx_ftoc(fz), amx_ftoc(tx), amx_ftoc(ty), amx_ftoc(tz), time, cut };
 	_interpolateCameraPos(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -2828,6 +3233,9 @@ PyObject *sInterpolateCameraLookAt(PyObject *self, PyObject *args)
 	float fx, fy, fz, tx, ty, tz;
 	PyArg_ParseTuple(args, "iffffffi|i", &pid, &fx, &fy, &fz, &tx, &ty, &tz, &time, &cut);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[10] = { 9 * sizeof(cell), pid, amx_ftoc(fx), amx_ftoc(fy), amx_ftoc(fz), amx_ftoc(tx), amx_ftoc(ty), amx_ftoc(tz), time, cut };
 	_interpolateCameraLookAt(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -2838,6 +3246,9 @@ PyObject *sIsObjectMoving(PyObject *self, PyObject *args)
 	int oid;
 	PyArg_ParseTuple(args, "i", &oid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), oid };
 	return Py_BuildValue("i", _isObjectMoving(m_AMX, amxargs));
 }
@@ -2846,6 +3257,9 @@ PyObject *sIsPlayerAdmin(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _isPlayerAdmin(m_AMX, amxargs));
@@ -2856,6 +3270,9 @@ PyObject *sIsPlayerAttachedObjectSlotUsed(PyObject *self, PyObject *args)
 	int pid, idx;
 	PyArg_ParseTuple(args, "ii", &pid, &idx);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, idx };
 	return Py_BuildValue("i", _isPlayerAttachedObjectSlotUsed(m_AMX, amxargs));
 }
@@ -2864,6 +3281,9 @@ PyObject *sIsPlayerConnected(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _isPlayerConnected(m_AMX, amxargs));
@@ -2874,6 +3294,9 @@ PyObject *sIsPlayerHoldingObject(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _isPlayerHoldingObject(m_AMX, amxargs));
 }
@@ -2882,6 +3305,9 @@ PyObject *sIsPlayerInAnyVehicle(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _isPlayerInAnyVehicle(m_AMX, amxargs));
@@ -2892,6 +3318,9 @@ PyObject *sIsPlayerInCheckpoint(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _isPlayerInCheckpoint(m_AMX, amxargs));
 }
@@ -2900,6 +3329,9 @@ PyObject *sIsPlayerInRaceCheckpoint(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _isPlayerInRaceCheckpoint(m_AMX, amxargs));
@@ -2911,6 +3343,9 @@ PyObject *sIsPlayerInRangeOfPoint(PyObject *self, PyObject *args)
 	float r, x, y, z;
 	PyArg_ParseTuple(args, "iffff", &pid, &r, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), pid, amx_ftoc(r), amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	return Py_BuildValue("i", _isPlayerInRangeOfPoint(m_AMX, amxargs));
 }
@@ -2919,6 +3354,9 @@ PyObject *sIsPlayerInVehicle(PyObject *self, PyObject *args)
 {
 	int pid, vid;
 	PyArg_ParseTuple(args, "ii", &pid, &vid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, vid };
 	return Py_BuildValue("i", _isPlayerInVehicle(m_AMX, amxargs));
@@ -2929,6 +3367,9 @@ PyObject *sIsPlayerNPC(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	return Py_BuildValue("i", _isPlayerNPC(m_AMX, amxargs));
 }
@@ -2937,6 +3378,9 @@ PyObject *sIsPlayerObjectMoving(PyObject *self, PyObject *args)
 {
 	int oid;
 	PyArg_ParseTuple(args, "i", &oid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), oid };
 	return Py_BuildValue("i", _isPlayerObjectMoving(m_AMX, amxargs));
@@ -2947,6 +3391,9 @@ PyObject *sIsPlayerStreamedIn(PyObject *self, PyObject *args)
 	int pid, fpid;
 	PyArg_ParseTuple(args, "ii", &pid, &fpid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, fpid };
 	return Py_BuildValue("i", _isPlayerStreamedIn(m_AMX, amxargs));
 }
@@ -2955,6 +3402,9 @@ PyObject *sIsTrailerAttachedToVehicle(PyObject *self, PyObject *args)
 {
 	int vid;
 	PyArg_ParseTuple(args, "i", &vid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), vid };
 	return Py_BuildValue("i", _isTrailerAttachedToVehicle(m_AMX, amxargs));
@@ -2965,6 +3415,9 @@ PyObject *sIsValidMenu(PyObject *self, PyObject *args)
 	int mid;
 	PyArg_ParseTuple(args, "i", &mid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), mid };
 	return Py_BuildValue("i", _isValidMenu(m_AMX, amxargs));
 }
@@ -2973,6 +3426,9 @@ PyObject *sIsValidObject(PyObject *self, PyObject *args)
 {
 	int oid;
 	PyArg_ParseTuple(args, "i", &oid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), oid };
 	return Py_BuildValue("i", _isValidObject(m_AMX, amxargs));
@@ -2983,6 +3439,9 @@ PyObject *sIsValidPlayerObject(PyObject *self, PyObject *args)
 	int pid, oid;
 	PyArg_ParseTuple(args, "ii", &pid, &oid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, oid };
 	return Py_BuildValue("i", _isValidPlayerObject(m_AMX, amxargs));
 }
@@ -2991,6 +3450,9 @@ PyObject *sIsVehicleStreamedIn(PyObject *self, PyObject *args)
 {
 	int vid, fpid;
 	PyArg_ParseTuple(args, "ii", &vid, &fpid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vid, fpid };
 	return Py_BuildValue("i", _isVehicleStreamedIn(m_AMX, amxargs));
@@ -3003,6 +3465,9 @@ PyObject *sKick(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	_kick(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3012,6 +3477,9 @@ PyObject *sKillTimer(PyObject *self, PyObject *args)
 {
 	long tid = 0;
 	PyArg_ParseTuple(args, "l", &tid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	if (tid == 0) Py_RETURN_NONE;
 
@@ -3037,6 +3505,9 @@ PyObject *sLimitGlobalChatRadius(PyObject *self, PyObject *args)
 	float cr;
 	PyArg_ParseTuple(args, "f", &cr);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), amx_ftoc(cr) };
 	_limitGlobalChatRadius(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3047,6 +3518,9 @@ PyObject *sLimitPlayerMarkerRadius(PyObject *self, PyObject *args)
 	float mr;
 	PyArg_ParseTuple(args, "f", &mr);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), amx_ftoc(mr) };
 	_limitPlayerMarkerRadius(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3056,6 +3530,9 @@ PyObject *sLinkVehicleToInterior(PyObject *self, PyObject *args)
 {
 	int vid, iid;
 	PyArg_ParseTuple(args, "ii", &vid, &iid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vid, iid };
 	_linkVehicleToInterior(m_AMX, amxargs);
@@ -3077,6 +3554,9 @@ PyObject *sMoveObject(PyObject *self, PyObject *args)
 	float x, y, z, s, rx = -1000.0, ry = -1000.0, rz = -1000.0;
 	PyArg_ParseTuple(args, "iffff|fff", &oid, &x, &y, &z, &s, &rx, &ry, &rz);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[9] = { 8 * sizeof(cell), oid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(s), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz) };
 	return Py_BuildValue("i", _moveObject(m_AMX, amxargs));
 }
@@ -3086,6 +3566,9 @@ PyObject *sMovePlayerObject(PyObject *self, PyObject *args)
 	int pid, oid;
 	float x, y, z, s, rx = -1000.0, ry = -1000.0, rz = -1000.0;
 	PyArg_ParseTuple(args, "iiffff|fff", &pid, &oid, &x, &y, &z, &s, &rx, &ry, &rz);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[10] = { 9 * sizeof(cell), pid, oid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(s), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz) };
 	return Py_BuildValue("i", _movePlayerObject(m_AMX, amxargs));
@@ -3101,6 +3584,9 @@ PyObject *sPlayAudioStreamForPlayer(PyObject *self, PyObject *args)
 	char *url = NULL;
 	// No conversion, should always be ASCII (urlencoded if need be).
 	PyArg_ParseTuple(args, "is|ffffi", &pid, &url, &x, &y, &z, &dist, &usepos);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 	
 	cell amxargs[8] = { 7 * sizeof(cell), pid, 0, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(dist), usepos };
 
@@ -3119,6 +3605,9 @@ PyObject *sPlayCrimeReportForPlayer(PyObject *self, PyObject *args)
 	int pid, sid, cid;
 	PyArg_ParseTuple(args, "iii", &pid, &sid, &cid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, sid, cid };
 	_playCrimeReportForPlayer(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3130,6 +3619,9 @@ PyObject *sPlayerPlaySound(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "iifff", &pid, &sid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), pid, sid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_playerPlaySound(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3139,6 +3631,9 @@ PyObject *sPlayerSpectatePlayer(PyObject *self, PyObject *args)
 {
 	int pid, tid, mode = SPECTATE_MODE_NORMAL;
 	PyArg_ParseTuple(args, "ii|i", &pid, &tid, &mode);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, tid, mode };
 	_playerSpectatePlayer(m_AMX, amxargs);
@@ -3150,6 +3645,9 @@ PyObject *sPlayerSpectateVehicle(PyObject *self, PyObject *args)
 	int pid, tid, mode = SPECTATE_MODE_NORMAL;
 	PyArg_ParseTuple(args, "ii|i", &pid, &tid, &mode);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, tid, mode };
 	_playerSpectateVehicle(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3160,6 +3658,9 @@ PyObject *sPutPlayerInVehicle(PyObject *self, PyObject *args)
 {
 	int pid, vid, sid;
 	PyArg_ParseTuple(args, "iii", &pid, &vid, &sid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, vid, sid };
 	_putPlayerInVehicle(m_AMX, amxargs);
@@ -3173,6 +3674,9 @@ PyObject *sCreatePlayerTextDraw(PyObject *self, PyObject *args)
 	float x, y;
 	char *txt = NULL;
 	PyArg_ParseTuple(args, "iffO&", &pid, &x, &y, _stringToCP1252, &txt);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), 0 };
 
@@ -3191,6 +3695,9 @@ PyObject *sPlayerTextDrawDestroy(PyObject *self, PyObject *args)
 	int pid, txt;
 	PyArg_ParseTuple(args, "ii", &pid, &txt);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, txt };
 	_playerTextDrawDestroy(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3201,6 +3708,9 @@ PyObject *sPlayerTextDrawLetterSize(PyObject *self, PyObject *args)
 	int pid, txt;
 	float x, y;
 	PyArg_ParseTuple(args, "iiff", &pid, &txt, &x, &y);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), pid, txt, amx_ftoc(x), amx_ftoc(y) };
 	_playerTextDrawLetterSize(m_AMX, amxargs);
@@ -3213,6 +3723,9 @@ PyObject *sPlayerTextDrawTextSize(PyObject *self, PyObject *args)
 	float x, y;
 	PyArg_ParseTuple(args, "iiff", &pid, &txt, &x, &y);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), pid, txt, amx_ftoc(x), amx_ftoc(y) };
 	_playerTextDrawTextSize(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3222,6 +3735,9 @@ PyObject *sPlayerTextDrawAlignment(PyObject *self, PyObject *args)
 {
 	int pid, text, alig;
 	PyArg_ParseTuple(args, "iii", &pid, &text, &alig);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, text, alig };
 	_playerTextDrawAlignment(m_AMX, amxargs);
@@ -3233,6 +3749,9 @@ PyObject *sPlayerTextDrawColor(PyObject *self, PyObject *args)
 	int pid, text;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iiO", &pid, &text, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 	_getColor(color);
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, text, colcode };
@@ -3245,6 +3764,9 @@ PyObject *sPlayerTextDrawUseBox(PyObject *self, PyObject *args)
 	int pid, txt, use;
 	PyArg_ParseTuple(args, "iii", &pid, &txt, &use);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, use };
 	_playerTextDrawUseBox(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3255,6 +3777,10 @@ PyObject *sPlayerTextDrawBoxColor(PyObject *self, PyObject *args)
 	int pid, text;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iiO", &pid, &text, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, text, colcode };
@@ -3268,6 +3794,9 @@ PyObject *sPlayerTextDrawSetPreviewModel(PyObject *self, PyObject *args)
 	int pid, txt, midx;
 	PyArg_ParseTuple(args, "iii", &pid, &txt, &midx);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, midx };
 	_playerTextDrawSetPreviewModel(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3278,6 +3807,9 @@ PyObject *sPlayerTextDrawSetPreviewRot(PyObject *self, PyObject *args)
 	int pid, txt;
 	float x, y, z, zoom;
 	PyArg_ParseTuple(args, "iiffff", &pid, &txt, &x, &y, &z, &zoom);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 	
 	cell amxargs[7] = { 6 * sizeof(cell), pid, txt, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(zoom) };
 
@@ -3290,6 +3822,9 @@ PyObject *sPlayerTextDrawSetPreviewVehCol(PyObject *self, PyObject *args)
 	int txt, pid, c1, c2;
 	PyArg_ParseTuple(args, "iiii", &txt, &pid, &c1, &c2);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), txt, pid, c1, c2 };
 	_playerTextDrawSetPreviewVehCol(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3299,6 +3834,9 @@ PyObject *sPlayerTextDrawSetShadow(PyObject *self, PyObject *args)
 {
 	int pid, txt, size;
 	PyArg_ParseTuple(args, "iii", &pid, &txt, &size);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, size };
 	_playerTextDrawSetShadow(m_AMX, amxargs);
@@ -3310,6 +3848,9 @@ PyObject *sPlayerTextDrawSetOutline(PyObject *self, PyObject *args)
 	int pid, txt, size;
 	PyArg_ParseTuple(args, "iii", &pid, &txt, &size);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, size };
 	_playerTextDrawSetOutline(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3320,6 +3861,10 @@ PyObject *sPlayerTextDrawBackgroundColor(PyObject *self, PyObject *args)
 	int pid, text;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iiO", &pid, &text, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, text, colcode };
@@ -3333,6 +3878,9 @@ PyObject *sPlayerTextDrawFont(PyObject *self, PyObject *args)
 	int pid, txt, font;
 	PyArg_ParseTuple(args, "iii", &pid, &txt, &font);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, font };
 	_playerTextDrawFont(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3342,6 +3890,9 @@ PyObject *sPlayerTextDrawSetProportional(PyObject *self, PyObject *args)
 {
 	int pid, txt, set;
 	PyArg_ParseTuple(args, "iii", &pid, &txt, &set);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, set };
 	_playerTextDrawSetProportional(m_AMX, amxargs);
@@ -3353,6 +3904,9 @@ PyObject *sPlayerTextDrawSetSelectable(PyObject *self, PyObject *args)
 	int pid, txt, set;
 	PyArg_ParseTuple(args, "iii", &pid, &txt, &set);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, set };
 	_playerTextDrawSetSelectable(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3362,6 +3916,9 @@ PyObject *sPlayerTextDrawShow(PyObject *self, PyObject *args)
 {
 	int pid, txt;
 	PyArg_ParseTuple(args, "ii", &pid, &txt);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, txt};
 	_playerTextDrawShow(m_AMX, amxargs);
@@ -3373,6 +3930,9 @@ PyObject *sPlayerTextDrawHide(PyObject *self, PyObject *args)
 	int pid, txt;
 	PyArg_ParseTuple(args, "ii", &pid, &txt);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, txt};
 	_playerTextDrawHide(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3383,6 +3943,9 @@ PyObject *sPlayerTextDrawSetString(PyObject *self, PyObject *args)
 	int pid, txt;
 	char *string = NULL;
 	PyArg_ParseTuple(args, "iiO&", &pid, &txt, _stringToCP1252, &string);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, 0 };
 
@@ -3403,6 +3966,9 @@ PyObject *sRemoveBuildingForPlayer(PyObject *self, PyObject *args)
 	int pid, modelid;
 	float x, y, z, radius;
 	PyArg_ParseTuple(args, "iiffff", &pid, &modelid, &x, &y, &z, &radius);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 	
 	cell amxargs[7] = { 6 * sizeof(cell), pid, modelid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(radius) };
 
@@ -3415,6 +3981,9 @@ PyObject *sRemovePlayerAttachedObject(PyObject *self, PyObject *args)
 	int pid, idx;
 	PyArg_ParseTuple(args, "ii", &pid, &idx);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, idx };
 	return Py_BuildValue("i", _removePlayerAttachedObject(m_AMX, amxargs));
 }
@@ -3423,6 +3992,9 @@ PyObject *sRemovePlayerFromVehicle(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	_removePlayerFromVehicle(m_AMX, amxargs);
@@ -3434,6 +4006,9 @@ PyObject *sRemovePlayerMapIcon(PyObject *self, PyObject *args)
 	int pid, ico;
 	PyArg_ParseTuple(args, "ii", &pid, &ico);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, ico };
 	_removePlayerMapIcon(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3443,6 +4018,9 @@ PyObject *sRemoveVehicleComponent(PyObject *self, PyObject *args)
 {
 	int pid, comp;
 	PyArg_ParseTuple(args, "ii", &pid, &comp);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, comp };
 	_removeVehicleComponent(m_AMX, amxargs);
@@ -3454,6 +4032,9 @@ PyObject *sRepairVehicle(PyObject *self, PyObject *args)
 	int vid;
 	PyArg_ParseTuple(args, "i", &vid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), vid };
 	_repairVehicle(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3464,6 +4045,9 @@ PyObject *sResetPlayerMoney(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	_resetPlayerMoney(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3473,6 +4057,9 @@ PyObject *sResetPlayerWeapons(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	_resetPlayerWeapons(m_AMX, amxargs);
@@ -3485,6 +4072,9 @@ PyObject *sSelectObject(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	_selectObject(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3495,6 +4085,10 @@ PyObject *sSelectTextDraw(PyObject *self, PyObject *args)
 	int pid;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iO", &pid, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, colcode };
@@ -3509,6 +4103,9 @@ PyObject *sSendClientMessage(PyObject *self, PyObject *args)
 	PyObject *color;
 	char *msg = NULL;
 	PyArg_ParseTuple(args, "iOO&", &playerid, &color, _stringToCP1252, &msg);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	_getColor(color);
 
@@ -3534,6 +4131,9 @@ PyObject *sSendClientMessageToAll(PyObject *self, PyObject *args)
 	char *msg = NULL;
 	PyArg_ParseTuple(args, "OO&", &color, _stringToCP1252, &msg);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	if (msg == NULL) Py_RETURN_NONE;
@@ -3557,6 +4157,9 @@ PyObject *sSendDeathMessage(PyObject *self, PyObject *args)
 	int k, v, reas;
 	PyArg_ParseTuple(args, "iii", &k, &v, &reas);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), k, v, reas };
 	_sendDeathMessage(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3567,6 +4170,9 @@ PyObject *sSendPlayerMessageToAll(PyObject *self, PyObject *args)
 	int sid;
 	char *msg = NULL;
 	PyArg_ParseTuple(args, "iO&", &sid, _stringToCP1252, &msg);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	if (msg == NULL) Py_RETURN_NONE;
 	cell amxargs[3] = { sizeof(cell) * 2, sid, 0 };
@@ -3589,6 +4195,9 @@ PyObject *sSendPlayerMessageToPlayer(PyObject *self, PyObject *args)
 	char *msg = NULL;
 	PyArg_ParseTuple(args, "iiO&", &pid, &sid, _stringToCP1252, &msg);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	if (msg == NULL) Py_RETURN_NONE;
 	cell amxargs[4] = { sizeof(cell) * 3, pid, sid, 0 };
 
@@ -3608,6 +4217,9 @@ PyObject *sSendRconCommand(PyObject *self, PyObject *args)
 {
 	char *cmd = NULL;
 	PyArg_ParseTuple(args, "O&", _stringToCP1252, &cmd);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	if (cmd == NULL) Py_RETURN_NONE;
 	cell amxargs[2] = { sizeof(cell), 0 };
@@ -3629,6 +4241,9 @@ PyObject *sSetCameraBehindPlayer(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	_setCameraBehindPlayer(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3640,6 +4255,10 @@ PyObject *sSetGameModeText(PyObject *self, PyObject *args)
 {
 	char *gmtext; int txtlen;
 	PyArg_ParseTuple(args, "O&", _stringToCP1252, &gmtext);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	txtlen = strlen(gmtext) + 1;
 	cell amxargs[2];
 
@@ -3660,6 +4279,10 @@ PyObject *sSetGravity(PyObject *self, PyObject *args)
 {
 	float gravity;
 	PyArg_ParseTuple(args, "f", &gravity);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), amx_ftoc(gravity) };
 
 	_setGravity(m_AMX, amxargs);
@@ -3671,6 +4294,9 @@ PyObject *sSetMenuColumnHeader(PyObject *self, PyObject *args)
 	int mid, col;
 	char *txt = NULL;
 	PyArg_ParseTuple(args, "iiO&", &mid, &col, _stringToCP1252, &txt);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	if (txt == NULL) Py_RETURN_NONE;
 	cell amxargs[4] = { sizeof(cell) * 3, mid, col, 0 };
@@ -3692,6 +4318,9 @@ PyObject *sSetNameTagDrawDistance(PyObject *self, PyObject *args)
 	float dis;
 	PyArg_ParseTuple(args, "f", &dis);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), amx_ftoc(dis) };
 	_setNameTagDrawDistance(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3704,6 +4333,9 @@ PyObject *sSetObjectMaterial(PyObject *self, PyObject *args)
 	char *txd = NULL, *texture = NULL;
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "iiissI", &oid, &midx, &mid, &txd, &texture, &matcol);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	if (txd == NULL || texture == NULL) Py_RETURN_NONE;
 	cell amxargs[7] = { 6 * sizeof(cell), oid, midx, mid, 0, 0, matcol };
@@ -3728,6 +4360,9 @@ PyObject *sSetObjectMaterialText(PyObject *self, PyObject *args)
 	char *txt = NULL, *fontface = "Arial";
 	PyArg_ParseTuple(args, "iO&|iisiiIIi", &oid, _stringToCP1252, &txt, &midx, &matsize, &fontface, &fontsize, &bold, &fontcol, &backcol, &txtalig);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	if (txt == NULL) Py_RETURN_NONE;
 	cell amxargs[11] = { 10 * sizeof(cell), oid, 0, midx, matsize, 0, fontsize, bold, fontcol, backcol, txtalig };
 
@@ -3750,6 +4385,9 @@ PyObject *sSetObjectPos(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &oid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), oid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setObjectPos(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3760,6 +4398,9 @@ PyObject *sSetObjectRot(PyObject *self, PyObject *args)
 	int oid;
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &oid, &x, &y, &z);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), oid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setObjectRot(m_AMX, amxargs);
@@ -3774,6 +4415,9 @@ PyObject *sSetPVarFloat(PyObject *self, PyObject *args)
 
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "isf", &playerid, &string, &value);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, amx_ftoc(value) };
 
@@ -3797,6 +4441,9 @@ PyObject *sSetPVarInt(PyObject *self, PyObject *args)
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "isi", &playerid, &string, &value);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, value };
 
 	int len = strlen(string) + 1;
@@ -3817,6 +4464,9 @@ PyObject *sSetPVarString(PyObject *self, PyObject *args)
 	char *string, *value;
 
 	PyArg_ParseTuple(args, "isO&", &playerid, &string, _stringToCP1252, &value);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, 0, 0 };
 
@@ -3843,6 +4493,9 @@ PyObject *sSetPlayerAmmo(PyObject *self, PyObject *args)
 	int pid, w, a;
 	PyArg_ParseTuple(args, "iii", &pid, &w, &a);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, w, a };
 	_setPlayerAmmo(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3852,6 +4505,9 @@ PyObject *sSetPlayerArmedWeapon(PyObject *self, PyObject *args)
 {
 	int pid, wid;
 	PyArg_ParseTuple(args, "ii", &pid, &wid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, wid };
 	_setPlayerArmedWeapon(m_AMX, amxargs);
@@ -3864,6 +4520,9 @@ PyObject *sSetPlayerArmour(PyObject *self, PyObject *args)
 	float arm;
 	PyArg_ParseTuple(args, "if", &pid, &arm);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, amx_ftoc(arm) };
 	_setPlayerArmour(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3874,6 +4533,9 @@ PyObject *sSetPlayerAttachedObject(PyObject *self, PyObject *args)
 	int pid, idx, modelid, bone, mat1 = 0, mat2 = 0;
 	float ox, oy, oz, rx, ry, rz, sx, sy, sz;
 	PyArg_ParseTuple(args, "iiiifffffffffii", &pid, &idx, &modelid, &bone, &ox, &oy, &oz, &rx, &ry, &rz, &sx, &sy, &sz, &mat1, &mat2);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[16] = { 15 * sizeof(cell), pid, idx, modelid, bone, amx_ftoc(ox), amx_ftoc(oy), amx_ftoc(oz), amx_ftoc(rx), amx_ftoc(ry), amx_ftoc(rz), amx_ftoc(sx), amx_ftoc(sy), amx_ftoc(sz), mat1, mat2 };
 
@@ -3888,6 +4550,9 @@ PyObject *sSetPlayerCameraLookAt(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff|i", &pid, &x, &y, &z, &cut);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), cut };
 	_setPlayerCameraLookAt(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3898,6 +4563,9 @@ PyObject *sSetPlayerCameraPos(PyObject *self, PyObject *args)
 	int pid;
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &pid, &x, &y, &z);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setPlayerCameraPos(m_AMX, amxargs);
@@ -3911,6 +4579,10 @@ PyObject *sSetPlayerChatBubble(PyObject *self, PyObject *args)
 	float drawdist;
 	char *txt = NULL;
 	PyArg_ParseTuple(args, "iO&Ofi", &pid, _stringToCP1252, &txt, &color, &drawdist, &exp);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 	
 	cell amxargs[6] = { 5 * sizeof(cell), pid, 0, colcode, amx_ftoc(drawdist), exp };
@@ -3933,6 +4605,9 @@ PyObject *sSetPlayerCheckpoint(PyObject *self, PyObject *args)
 	float x, y, z, s;
 	PyArg_ParseTuple(args, "iffff", &pid, &x, &y, &z, &s);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(s) };
 	_setPlayerCheckpoint(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3943,6 +4618,10 @@ PyObject *sSetPlayerColor(PyObject *self, PyObject *args)
 	int pid;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iO", &pid, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, colcode };
@@ -3957,6 +4636,9 @@ PyObject *sSetPlayerDrunkLevel(PyObject *self, PyObject *args)
 	int pid, lvl;
 	PyArg_ParseTuple(args, "ii", &pid, &lvl);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, lvl };
 	_setPlayerDrunkLevel(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3968,6 +4650,9 @@ PyObject *sSetPlayerFacingAngle(PyObject *self, PyObject *args)
 	float ang;
 	PyArg_ParseTuple(args, "if", &pid, &ang);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, amx_ftoc(ang) };
 	_setPlayerFacingAngle(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -3977,6 +4662,9 @@ PyObject *sSetPlayerFightingStyle(PyObject *self, PyObject *args)
 {
 	int pid, style;
 	PyArg_ParseTuple(args, "ii", &pid, &style);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, style };
 	_setPlayerFightingStyle(m_AMX, amxargs);
@@ -3988,6 +4676,9 @@ PyObject *sSetPlayerHealth(PyObject *self, PyObject *args)
 	int pid;
 	float h;
 	PyArg_ParseTuple(args, "if", &pid, &h);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, amx_ftoc(h) };
 	_setPlayerHealth(m_AMX, amxargs);
@@ -4004,6 +4695,9 @@ PyObject *sSetPlayerInterior(PyObject *self, PyObject *args)
 	int pid, iid;
 	PyArg_ParseTuple(args, "ii", &pid, &iid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, iid };
 	_setPlayerInterior(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4015,6 +4709,10 @@ PyObject *sSetPlayerMapIcon(PyObject *self, PyObject *args)
 	PyObject *color;
 	float x, y, z;
 	PyArg_ParseTuple(args, "iifffiOi", &pid, &ico, &x, &y, &z, &marker, &color, &style);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[9] = { 8 * sizeof(cell), pid, ico, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), marker, colcode, style };
@@ -4029,6 +4727,10 @@ PyObject *sSetPlayerMarkerForPlayer(PyObject *self, PyObject *args)
 	int pid, spid;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iiO", &pid, &spid, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, spid, colcode };
@@ -4044,6 +4746,9 @@ PyObject *sSetPlayerName(PyObject *self, PyObject *args)
 	char *name = NULL;
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &pid, &name);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 	
 	cell amxargs[3] = { 2 * sizeof(cell), pid, 0 };
 
@@ -4065,6 +4770,9 @@ PyObject *sSetPlayerObjectMaterial(PyObject *self, PyObject *args)
 	char *txd = NULL, *texture = NULL;
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "iiiissI", &pid, &oid, &midx, &mid, &txd, &texture, &matcol);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	if (txd == NULL || texture == NULL) Py_RETURN_NONE;
 	cell amxargs[8] = { 7 * sizeof(cell), pid, oid, midx, mid, 0, 0, matcol };
@@ -4089,6 +4797,9 @@ PyObject *sSetPlayerObjectMaterialText(PyObject *self, PyObject *args)
 	char *txt = NULL, *fontface = "Arial";
 	PyArg_ParseTuple(args, "iiO&|iisiiIIi", &pid, &oid, _stringToCP1252, &txt, &midx, &matsize, &fontface, &fontsize, &bold, &fontcol, &backcol, &txtalig);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	if (txt == NULL) Py_RETURN_NONE;
 	cell amxargs[12] = { 11 * sizeof(cell), pid, oid, 0, midx, matsize, 0, fontsize, bold, fontcol, backcol, txtalig };
 
@@ -4111,6 +4822,9 @@ PyObject *sSetPlayerObjectPos(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "iifff", &pid, &oid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), pid, oid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setPlayerObjectPos(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4121,6 +4835,9 @@ PyObject *sSetPlayerObjectRot(PyObject *self, PyObject *args)
 	int pid, oid;
 	float x, y, z;
 	PyArg_ParseTuple(args, "iifff", &pid, &oid, &x, &y, &z);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[6] = { 5 * sizeof(cell), pid, oid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setPlayerObjectRot(m_AMX, amxargs);
@@ -4133,6 +4850,9 @@ PyObject *sSetPlayerPos(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &pid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setPlayerPos(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4143,6 +4863,9 @@ PyObject *sSetPlayerPosFindZ(PyObject *self, PyObject *args)
 	int pid;
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &pid, &x, &y, &z);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setPlayerPosFindZ(m_AMX, amxargs);
@@ -4155,6 +4878,9 @@ PyObject *sSetPlayerRaceCheckpoint(PyObject *self, PyObject *args)
 	float x, y, z, nx, ny, nz, size;
 	PyArg_ParseTuple(args, "iifffffff", &pid, &type, &x, &y, &z, &nx, &ny, &nz, &size);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[10] = { 9 * sizeof(cell), pid, type, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(nx), amx_ftoc(ny), amx_ftoc(nz), amx_ftoc(size) };
 	_setPlayerRaceCheckpoint(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4164,6 +4890,9 @@ PyObject *sSetPlayerScore(PyObject *self, PyObject *args)
 {
 	int pid, score;
 	PyArg_ParseTuple(args, "ii", &pid, &score);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, score };
 	_setPlayerScore(m_AMX, amxargs);
@@ -4176,6 +4905,9 @@ PyObject *sSetPlayerShopName(PyObject *self, PyObject *args)
 	char *shop = NULL;
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &pid, &shop);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, 0 };
 
@@ -4195,6 +4927,9 @@ PyObject *sSetPlayerSkillLevel(PyObject *self, PyObject *args)
 	int pid, skill, lvl;
 	PyArg_ParseTuple(args, "iii", &pid, &skill, &lvl);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, skill, lvl };
 	_setPlayerSkillLevel(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4204,6 +4939,9 @@ PyObject *sSetPlayerSkin(PyObject *self, PyObject *args)
 {
 	int pid, skin;
 	PyArg_ParseTuple(args, "ii", &pid, &skin);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, skin };
 	_setPlayerSkin(m_AMX, amxargs);
@@ -4215,6 +4953,9 @@ PyObject *sSetPlayerSpecialAction(PyObject *self, PyObject *args)
 	int pid, act;
 	PyArg_ParseTuple(args, "ii", &pid, &act);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, act };
 	_setPlayerSpecialAction(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4225,6 +4966,9 @@ PyObject *sSetPlayerTeam(PyObject *self, PyObject *args)
 	int pid, tid;
 	PyArg_ParseTuple(args, "ii", &pid, &tid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, tid };
 	_setPlayerTeam(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4234,6 +4978,9 @@ PyObject *sSetPlayerTime(PyObject *self, PyObject *args)
 {
 	int pid, hour, min;
 	PyArg_ParseTuple(args, "iii", &pid, &hour, &min);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, hour, min };
 	_setPlayerTime(m_AMX, amxargs);
@@ -4246,6 +4993,9 @@ PyObject *sSetPlayerVelocity(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &pid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), pid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setPlayerVelocity(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4255,6 +5005,9 @@ PyObject *sSetPlayerVirtualWorld(PyObject *self, PyObject *args)
 {
 	int pid, wid;
 	PyArg_ParseTuple(args, "ii", &pid, &wid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, wid };
 	_setPlayerVirtualWorld(m_AMX, amxargs);
@@ -4266,6 +5019,9 @@ PyObject *sSetPlayerWantedLevel(PyObject *self, PyObject *args)
 	int pid, lvl;
 	PyArg_ParseTuple(args, "ii", &pid, &lvl);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, lvl };
 	_setPlayerWantedLevel(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4275,6 +5031,9 @@ PyObject *sSetPlayerWeather(PyObject *self, PyObject *args)
 {
 	int pid, w;
 	PyArg_ParseTuple(args, "ii", &pid, &w);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, w };
 	_setPlayerWeather(m_AMX, amxargs);
@@ -4287,6 +5046,9 @@ PyObject *sSetPlayerWorldBounds(PyObject *self, PyObject *args)
 	float xmax, xmin, ymax, ymin;
 	PyArg_ParseTuple(args, "iffff", &pid, &xmax, &xmin, &ymax, &ymin);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), pid, amx_ftoc(xmax), amx_ftoc(xmin), amx_ftoc(ymax), amx_ftoc(ymin) };
 	_setPlayerWorldBounds(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4298,6 +5060,9 @@ PyObject *sSetSpawnInfo(PyObject *self, PyObject *args)
 	float x, y, z, a;
 	PyArg_ParseTuple(args, "iiiffffiiiiii", &pid, &team, &skin, &x, &y, &z, &a, &w1, &w1a, &w2, &w2a, &w3, &w3a);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[14] = { 13 * sizeof(cell), pid, team, skin, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(a), w1, w1a, w2, w2a, w3, w3a };
 	_setSpawnInfo(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4307,6 +5072,9 @@ PyObject *sSetTeamCount(PyObject *self, PyObject *args)
 {
 	int t;
 	PyArg_ParseTuple(args, "i", &t);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), t };
 	_setTeamCount(m_AMX, amxargs);
@@ -4324,6 +5092,9 @@ PyObject *sSetTimer(PyObject *self, PyObject *args)
 
 	data.params = NULL; // required for checking for the optional parameter
 	PyArg_ParseTuple(args, "Oib|O", &data.func, &data.interval, &tmp_repeating, &data.params);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	data.id = nextid++; // use nextid and increment it
 	data.repeating = tmp_repeating == 1;
@@ -4348,6 +5119,9 @@ PyObject *sSetVehicleAngularVelocity(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &vid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), vid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setVehicleAngularVelocity(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4358,6 +5132,9 @@ PyObject *sSetVehicleHealth(PyObject *self, PyObject *args)
 	int vid;
 	float h;
 	PyArg_ParseTuple(args, "if", &vid, &h);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vid, amx_ftoc(h) };
 	_setVehicleHealth(m_AMX, amxargs);
@@ -4370,6 +5147,9 @@ PyObject *sSetVehicleNumberPlate(PyObject *self, PyObject *args)
 	char *plate = NULL;
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "is", &vid, &plate);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vid, 0 };
 
@@ -4388,6 +5168,9 @@ PyObject *sSetVehicleParamsEx(PyObject *self, PyObject *args)
 	int vid, eng, lig, alm, doors, bonnet, boot, obj;
 	PyArg_ParseTuple(args, "iiiiiiii", &vid, &eng, &lig, &alm, &doors, &bonnet, &boot, &obj);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[9] = { 8 * sizeof(cell), vid, eng, lig, alm, doors, bonnet, boot, obj };
 	_setVehicleParamsEx(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4397,6 +5180,9 @@ PyObject *sSetVehicleParamsForPlayer(PyObject *self, PyObject *args)
 {
 	int vid, pid, obj, doors;
 	PyArg_ParseTuple(args, "iiii", &vid, &pid, &obj, &doors);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[5] = { 4 * sizeof(cell), vid, pid, obj, doors };
 	_setVehicleParamsForPlayer(m_AMX, amxargs);
@@ -4409,6 +5195,9 @@ PyObject *sSetVehiclePos(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &vid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), vid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setVehiclePos(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4418,6 +5207,9 @@ PyObject *sSetVehicleToRespawn(PyObject *self, PyObject *args)
 {
 	int vid;
 	PyArg_ParseTuple(args, "i", &vid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), vid };
 	_setVehicleToRespawn(m_AMX, amxargs);
@@ -4430,6 +5222,9 @@ PyObject *sSetVehicleVelocity(PyObject *self, PyObject *args)
 	float x, y, z;
 	PyArg_ParseTuple(args, "ifff", &vid, &x, &y, &z);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[5] = { 4 * sizeof(cell), vid, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z) };
 	_setVehicleVelocity(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4439,6 +5234,9 @@ PyObject *sSetVehicleVirtualWorld(PyObject *self, PyObject *args)
 {
 	int vid, wid;
 	PyArg_ParseTuple(args, "ii", &vid, &wid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), vid, wid };
 	_setVehicleVirtualWorld(m_AMX, amxargs);
@@ -4451,6 +5249,9 @@ PyObject *sSetVehicleZAngle(PyObject *self, PyObject *args)
 	float zang;
 	PyArg_ParseTuple(args, "if", &vid, &zang);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), vid, amx_ftoc(zang) };
 	_setVehicleZAngle(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4461,6 +5262,9 @@ PyObject *sSetWeather(PyObject *self, PyObject *args)
 	int wid;
 	PyArg_ParseTuple(args, "i", &wid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), wid };
 	_setWeather(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4470,6 +5274,9 @@ PyObject *sSetWorldTime(PyObject *self, PyObject *args)
 {
 	int h;
 	PyArg_ParseTuple(args, "i", &h);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), h };
 	_setWorldTime(m_AMX, amxargs);
@@ -4482,6 +5289,9 @@ PyObject *sShowMenuForPlayer(PyObject *self, PyObject *args)
 	int mid, pid;
 	PyArg_ParseTuple(args, "ii", &mid, &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), mid, pid };
 	_showMenuForPlayer(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4491,6 +5301,9 @@ PyObject *sShowNameTags(PyObject *self, PyObject *args)
 {
 	int en;
 	PyArg_ParseTuple(args, "i", &en);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), en };
 	_showNameTags(m_AMX, amxargs);
@@ -4502,6 +5315,9 @@ PyObject *sShowPlayerDialog(PyObject *self, PyObject *args)
 	int pid, did, style;
 	char *caption = NULL, *info = NULL, *btn1 = NULL, *btn2 = NULL;
 	PyArg_ParseTuple(args, "iiiO&O&O&O&", &pid, &did, &style, _stringToCP1252, &caption, _stringToCP1252, &info, _stringToCP1252, &btn1, _stringToCP1252, &btn2);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[8] = { 7 * sizeof(cell), pid, did, style, 0, 0, 0, 0 };
 
@@ -4527,6 +5343,9 @@ PyObject *sShowPlayerMarkers(PyObject *self, PyObject *args)
 	int mode;
 	PyArg_ParseTuple(args, "i", &mode);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), mode };
 	_showPlayerMarkers(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4537,6 +5356,9 @@ PyObject *sShowPlayerNameTagForPlayer(PyObject *self, PyObject *args)
 	int pid, spid, show;
 	PyArg_ParseTuple(args, "iii", &pid, &spid, &show);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), pid, spid, show };
 	_showPlayerNameTagForPlayer(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4546,6 +5368,9 @@ PyObject *sSpawnPlayer(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	_spawnPlayer(m_AMX, amxargs);
@@ -4558,6 +5383,9 @@ PyObject *sStartRecordingPlayerData(PyObject *self, PyObject *args)
 	char *recname;
 	// No conversion, should always be ASCII.
 	PyArg_ParseTuple(args, "iis", &playerid, &rectype, &recname);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), playerid, rectype, 0 };
 
@@ -4578,6 +5406,9 @@ PyObject *sStopAudioStreamForPlayer(PyObject *self, PyObject *args)
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), pid };
 	_stopAudioStreamForPlayer(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4587,6 +5418,9 @@ PyObject *sStopObject(PyObject *self, PyObject *args)
 {
 	int oid;
 	PyArg_ParseTuple(args, "i", &oid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), oid };
 	_stopObject(m_AMX, amxargs);
@@ -4603,6 +5437,9 @@ PyObject *sStopPlayerObject(PyObject *self, PyObject *args)
 	int pid, oid;
 	PyArg_ParseTuple(args, "ii", &pid, &oid);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, oid };
 	_stopPlayerObject(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4612,6 +5449,9 @@ PyObject *sStopRecordingPlayerData(PyObject *self, PyObject *args)
 {
 	int pid;
 	PyArg_ParseTuple(args, "i", &pid);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[2] = { sizeof(cell), pid };
 	_stopRecordingPlayerData(m_AMX, amxargs);
@@ -4625,6 +5465,9 @@ PyObject *sTextDrawAlignment(PyObject *self, PyObject *args)
 	int text, alig;
 	PyArg_ParseTuple(args, "ii", &text, &alig);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), text, alig };
 	_textDrawAlignment(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4635,6 +5478,10 @@ PyObject *sTextDrawBackgroundColor(PyObject *self, PyObject *args)
 	int text;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iO", &text, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[3] = { 2 * sizeof(cell), text, colcode };
@@ -4649,6 +5496,10 @@ PyObject *sTextDrawBoxColor(PyObject *self, PyObject *args)
 	int text;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iO", &text, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[3] = { 2 * sizeof(cell), text, colcode };
@@ -4663,6 +5514,10 @@ PyObject *sTextDrawColor(PyObject *self, PyObject *args)
 	int text;
 	PyObject *color;
 	PyArg_ParseTuple(args, "iO", &text, &color);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[3] = { 2 * sizeof(cell), text, colcode };
@@ -4677,6 +5532,9 @@ PyObject *sTextDrawCreate(PyObject *self, PyObject *args)
 	float x, y;
 	char *txt = NULL;
 	PyArg_ParseTuple(args, "ffO&", &x, &y, _stringToCP1252, &txt);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), amx_ftoc(x), amx_ftoc(y), 0 };
 
@@ -4695,6 +5553,9 @@ PyObject *sTextDrawDestroy(PyObject *self, PyObject *args)
 	int txt;
 	PyArg_ParseTuple(args, "i", &txt);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), txt };
 	_textDrawDestroy(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4704,6 +5565,9 @@ PyObject *sTextDrawFont(PyObject *self, PyObject *args)
 {
 	int txt, font;
 	PyArg_ParseTuple(args, "ii", &txt, &font);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), txt, font };
 	_textDrawFont(m_AMX, amxargs);
@@ -4715,6 +5579,9 @@ PyObject *sTextDrawHideForAll(PyObject *self, PyObject *args)
 	int txt;
 	PyArg_ParseTuple(args, "i", &txt);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), txt };
 	_textDrawHideForAll(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4724,6 +5591,9 @@ PyObject *sTextDrawHideForPlayer(PyObject *self, PyObject *args)
 {
 	int pid, txt;
 	PyArg_ParseTuple(args, "ii", &pid, &txt);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, txt };
 	_textDrawHideForPlayer(m_AMX, amxargs);
@@ -4736,6 +5606,9 @@ PyObject *sTextDrawLetterSize(PyObject *self, PyObject *args)
 	float x, y;
 	PyArg_ParseTuple(args, "iff", &txt, &x, &y);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), txt, amx_ftoc(x), amx_ftoc(y) };
 	_textDrawLetterSize(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4746,6 +5619,9 @@ PyObject *sTextDrawSetOutline(PyObject *self, PyObject *args)
 	int txt, size;
 	PyArg_ParseTuple(args, "ii", &txt, &size);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), txt, size };
 	_textDrawSetOutline(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4755,6 +5631,9 @@ PyObject *sTextDrawSetPreviewModel(PyObject *self, PyObject *args)
 {
 	int txt, midx;
 	PyArg_ParseTuple(args, "ii", &txt, &midx);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), txt, midx };
 	_textDrawSetPreviewModel(m_AMX, amxargs);
@@ -4767,6 +5646,9 @@ PyObject *sTextDrawSetPreviewRot(PyObject *self, PyObject *args)
 	float x, y, z, zoom;
 	PyArg_ParseTuple(args, "iffff", &txt, &x, &y, &z, &zoom);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), txt, amx_ftoc(x), amx_ftoc(y), amx_ftoc(z), amx_ftoc(zoom) };
 	_textDrawSetPreviewRot(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4776,6 +5658,9 @@ PyObject *sTextDrawSetPreviewVehCol(PyObject *self, PyObject *args)
 {
 	int txt, color1, color2;
 	PyArg_ParseTuple(args, "iii", &txt, &color1, &color2);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[4] = { 3 * sizeof(cell), txt, color1, color2 };
 	_textDrawSetPreviewVehCol(m_AMX, amxargs);
@@ -4787,6 +5672,9 @@ PyObject *sTextDrawSetProportional(PyObject *self, PyObject *args)
 	int txt, set;
 	PyArg_ParseTuple(args, "ii", &txt, &set);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), txt, set };
 	_textDrawSetProportional(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4796,6 +5684,9 @@ PyObject *sTextDrawSetSelectable(PyObject *self, PyObject *args)
 {
 	int txt, set;
 	PyArg_ParseTuple(args, "ii", &txt, &set);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), txt, set };
 	_textDrawSetSelectable(m_AMX, amxargs);
@@ -4807,6 +5698,9 @@ PyObject *sTextDrawSetShadow(PyObject *self, PyObject *args)
 	int txt, size;
 	PyArg_ParseTuple(args, "ii", &txt, &size);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), txt, size };
 	_textDrawSetShadow(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4817,6 +5711,9 @@ PyObject *sTextDrawSetString(PyObject *self, PyObject *args)
 	int txt;
 	char *string = NULL;
 	PyArg_ParseTuple(args, "iO&", &txt, _stringToCP1252, &string);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), txt, 0 };
 
@@ -4835,6 +5732,9 @@ PyObject *sTextDrawShowForAll(PyObject *self, PyObject *args)
 	int txt;
 	PyArg_ParseTuple(args, "i", &txt);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[2] = { sizeof(cell), txt };
 	_textDrawShowForAll(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4844,6 +5744,9 @@ PyObject *sTextDrawShowForPlayer(PyObject *self, PyObject *args)
 {
 	int pid, txt;
 	PyArg_ParseTuple(args, "ii", &pid, &txt);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, txt };
 	_textDrawShowForPlayer(m_AMX, amxargs);
@@ -4856,6 +5759,9 @@ PyObject *sTextDrawTextSize(PyObject *self, PyObject *args)
 	float x, y;
 	PyArg_ParseTuple(args, "iff", &txt, &x, &y);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[4] = { 3 * sizeof(cell), txt, amx_ftoc(x), amx_ftoc(y) };
 	_textDrawTextSize(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4865,6 +5771,9 @@ PyObject *sTextDrawUseBox(PyObject *self, PyObject *args)
 {
 	int txt, use;
 	PyArg_ParseTuple(args, "ii", &txt, &use);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), txt, use };
 	_textDrawUseBox(m_AMX, amxargs);
@@ -4877,6 +5786,9 @@ PyObject *sTogglePlayerClock(PyObject *self, PyObject *args)
 	int pid, tog;
 	PyArg_ParseTuple(args, "ii", &pid, &tog);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, tog };
 	_togglePlayerClock(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4887,6 +5799,9 @@ PyObject *sTogglePlayerControllable(PyObject *self, PyObject *args)
 	int pid, tog;
 	PyArg_ParseTuple(args, "ii", &pid, &tog);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[3] = { 2 * sizeof(cell), pid, tog };
 	_togglePlayerControllable(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4896,6 +5811,9 @@ PyObject *sTogglePlayerSpectating(PyObject *self, PyObject *args)
 {
 	int pid, tog;
 	PyArg_ParseTuple(args, "ii", &pid, &tog);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 
 	cell amxargs[3] = { 2 * sizeof(cell), pid, tog };
 	_togglePlayerSpectating(m_AMX, amxargs);
@@ -4908,6 +5826,10 @@ PyObject *sUpdate3DTextLabelText(PyObject *self, PyObject *args)
 	PyObject *color;
 	char *txt = NULL;
 	PyArg_ParseTuple(args, "iOO&", &t3d, &color, _stringToCP1252, &txt);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[4] = { 3 * sizeof(cell), t3d, colcode, 0 };
@@ -4929,6 +5851,10 @@ PyObject *sUpdatePlayer3DTextLabelText(PyObject *self, PyObject *args)
 	PyObject *color;
 	char *txt = NULL;
 	PyArg_ParseTuple(args, "iiOO&", &pid, &t3d, &color, _stringToCP1252, &txt);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	_getColor(color);
 
 	cell amxargs[5] = { 4 * sizeof(cell), pid, t3d, colcode, 0 };
@@ -4949,6 +5875,9 @@ PyObject *sUpdateVehicleDamageStatus(PyObject *self, PyObject *args)
 	int vid, pan, doors, lig, tires;
 	PyArg_ParseTuple(args, "iiiii", &vid, &pan, &doors, &lig, &tires);
 
+	if(PyErr_Occurred() != NULL)
+		return NULL;
+
 	cell amxargs[6] = { 5 * sizeof(cell), vid, pan, doors, lig, tires };
 	_updateVehicleDamageStatus(m_AMX, amxargs);
 	Py_RETURN_NONE;
@@ -4968,6 +5897,9 @@ PyObject *sInvokeFunction(PyObject *self, PyObject *args)
 {
 	invoke_data tmp = { NULL, NULL };
 	PyArg_ParseTuple(args, "O|O", &tmp.func, &tmp.params);
+
+	if(PyErr_Occurred() != NULL)
+		return NULL;
 	
 	Py_INCREF(tmp.func);
 	Py_XINCREF(tmp.params);
