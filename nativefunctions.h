@@ -30,13 +30,6 @@ void _initAMX(AMX *amx);
 char *_getString(AMX *amx, cell params);
 #define _del(x) if (x) { delete [] (x); (x) = NULL; }
 #define _pyNoReturnVal(x) (x == NULL || x == Py_None) 
-#define _retPyInt(pyobj, def) \
-	if (_pyNoReturnVal(pyobj)) return def;\
-	\
-	cell res = PyInt_AsLong(pyobj);\
-	Py_DECREF(pyobj);\
-	return res;
-
 #define _getColor(pyobj) \
 	int colcode; \
 	if (PyTuple_Check(pyobj)) \
@@ -48,7 +41,9 @@ char *_getString(AMX *amx, cell params);
 	}\
 	else\
 	{\
-		colcode = PyLong_AsLong(pyobj); \
+		colcode = PyLong_AsLongLong(pyobj) & 0xFFFFFFFF; \
+		if(colcode == -1 && PyErr_Occurred()) \
+			return NULL; \
 	}
 
 //-----------------------------------------
