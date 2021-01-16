@@ -38,17 +38,17 @@ char *_getString(AMX *amx, cell params);
 	return res;
 
 #define _getColor(pyobj) \
-	unsigned int colcode; \
+	int colcode; \
 	if (PyTuple_Check(pyobj)) \
 	{\
 		unsigned char *col = new unsigned char[4]; \
 		PyArg_ParseTuple(pyobj, "bbbb", &col[3], &col[2], &col[1], &col[0]); \
-		colcode = *(unsigned int*)col; \
+		colcode = *(int*)col; \
 		_del(col); \
 	}\
 	else\
 	{\
-		colcode = PyLong_AsUnsignedLong(pyobj); \
+		colcode = PyLong_AsLong(pyobj); \
 	}
 
 //-----------------------------------------
