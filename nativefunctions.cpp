@@ -185,6 +185,7 @@ int _stringToCP1252(PyObject *source, char **destination)
 		return 0;
 
 	*destination = (char *)malloc(len);
+	memset(*destination, 0, len);
 	memcpy(*destination, buffer, len);
 	Py_DECREF(bytes);
 
