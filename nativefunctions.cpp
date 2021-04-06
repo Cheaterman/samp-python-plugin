@@ -178,12 +178,12 @@ int _stringToCP1252(PyObject *source, char **destination)
 		return 0;
 
 	char *buffer = NULL;
-	buffer = PyBytes_AsString(bytes);
+	Py_ssize_t len;
+	int ret = PyBytes_AsStringAndSize(bytes, &buffer, &len);
 
-	if(buffer == NULL)
+	if(buffer == NULL || ret == -1)
 		return 0;
 
-	Py_ssize_t len = PyBytes_Size(bytes) + 1;
 	*destination = (char *)malloc(len);
 	memcpy(*destination, buffer, len);
 	Py_DECREF(bytes);
@@ -904,7 +904,7 @@ PyObject *sAddMenuItem(PyObject *self, PyObject *args)
 
 	_addMenuItem(m_AMX, amxargs);
 
-	//PyMem_Free(title);
+	free(title);
 	amx_Release(m_AMX, amxargs[3]);
 	Py_RETURN_NONE;
 }
@@ -1235,7 +1235,7 @@ PyObject *sBanEx(PyObject *self, PyObject *args)
 
 	_banEx(m_AMX, amxargs);
 
-	//PyMem_Free(reason);
+	free(reason);
 	amx_Release(m_AMX, amxargs[2]);
 
 	Py_RETURN_NONE;
@@ -1465,8 +1465,7 @@ PyObject *sCreate3DTextLabel(PyObject *self, PyObject *args)
 
 	cell ret = _create3DTextLabel(m_AMX, amxargs);
 
-	//_del(col);
-	//PyMem_Free(text);
+	free(text);
 	amx_Release(m_AMX, amxargs[1]);
 
 	return Py_BuildValue("i", ret);
@@ -1505,7 +1504,7 @@ PyObject *sCreateMenu(PyObject *self, PyObject *args)
 
 	cell ret = _createMenu(m_AMX, amxargs);
 
-	//PyMem_Free(title);
+	free(title);
 	amx_Release(m_AMX, amxargs[1]);
 
 	return Py_BuildValue("i", ret);
@@ -1559,7 +1558,7 @@ PyObject *sCreatePlayer3DTextLabel(PyObject *self, PyObject *args)
 
 	cell ret = _createPlayer3DTextLabel(m_AMX, amxargs);
 
-	//PyMem_Free(text);
+	free(text);
 	amx_Release(m_AMX, amxargs[2]);
 
 	return Py_BuildValue("i", ret);
@@ -1903,7 +1902,7 @@ PyObject *sGameTextForAll(PyObject *self, PyObject *args)
 
 	_gameTextForAll(m_AMX, amxargs);
 
-	//PyMem_Free(string);
+	free(string);
 	amx_Release(m_AMX, amxargs[1]);
 	Py_RETURN_NONE;
 }
@@ -1926,7 +1925,7 @@ PyObject *sGameTextForPlayer(PyObject *self, PyObject *args)
 
 	_gameTextForPlayer(m_AMX, amxargs);
 
-	//PyMem_Free(string);
+	free(string);
 	amx_Release(m_AMX, amxargs[2]);
 	Py_RETURN_NONE;
 }
@@ -3692,6 +3691,7 @@ PyObject *sCreatePlayerTextDraw(PyObject *self, PyObject *args)
 
 	cell ret = _createPlayerTextDraw(m_AMX, amxargs);
 
+	free(txt);
 	amx_Release(m_AMX, amxargs[4]);
 	return Py_BuildValue("i", ret);
 }
@@ -3962,6 +3962,7 @@ PyObject *sPlayerTextDrawSetString(PyObject *self, PyObject *args)
 
 	_playerTextDrawSetString(m_AMX, amxargs);
 
+	free(string);
 	amx_Release(m_AMX, amxargs[3]);
 	Py_RETURN_NONE;
 }
@@ -4125,8 +4126,7 @@ PyObject *sSendClientMessage(PyObject *self, PyObject *args)
 
 	_sendClientMessage(m_AMX, amxargs);
 
-	//_del(col);
-	//PyMem_Free(msg);
+	free(msg);
 	amx_Release(m_AMX, amxargs[3]);
 
 	Py_RETURN_NONE;
@@ -4152,8 +4152,7 @@ PyObject *sSendClientMessageToAll(PyObject *self, PyObject *args)
 
 	_sendClientMessageToAll(m_AMX, amxargs);
 
-	//_del(col);
-	//PyMem_Free(msg);
+	free(msg);
 	amx_Release(m_AMX, amxargs[2]);
 
 	Py_RETURN_NONE;
@@ -4190,7 +4189,7 @@ PyObject *sSendPlayerMessageToAll(PyObject *self, PyObject *args)
 
 	_sendPlayerMessageToAll(m_AMX, amxargs);
 
-	//PyMem_Free(msg);
+	free(msg);
 	amx_Release(m_AMX, amxargs[2]);
 
 	Py_RETURN_NONE;
@@ -4214,7 +4213,7 @@ PyObject *sSendPlayerMessageToPlayer(PyObject *self, PyObject *args)
 
 	_sendPlayerMessageToPlayer(m_AMX, amxargs);
 
-	//PyMem_Free(msg);
+	free(msg);
 	amx_Release(m_AMX, amxargs[3]);
 
 	Py_RETURN_NONE;
@@ -4237,7 +4236,7 @@ PyObject *sSendRconCommand(PyObject *self, PyObject *args)
 
 	_sendRconCommand(m_AMX, amxargs);
 
-	//PyMem_Free(cmd);
+	free(cmd);
 	amx_Release(m_AMX, amxargs[1]);
 
 	Py_RETURN_NONE;
@@ -4278,7 +4277,7 @@ PyObject *sSetGameModeText(PyObject *self, PyObject *args)
 
 	_setGameModeText(m_AMX, amxargs);
 
-	//PyMem_Free(gmtext);
+	free(gmtext);
 	Py_RETURN_NONE;
 }
 // SetGravity(Float:gravity)
@@ -4314,7 +4313,7 @@ PyObject *sSetMenuColumnHeader(PyObject *self, PyObject *args)
 
 	_setMenuColumnHeader(m_AMX, amxargs);
 
-	//PyMem_Free(txt);
+	free(txt);
 	amx_Release(m_AMX, amxargs[3]);
 
 	Py_RETURN_NONE;
@@ -4381,6 +4380,7 @@ PyObject *sSetObjectMaterialText(PyObject *self, PyObject *args)
 
 	_setObjectMaterialText(m_AMX, amxargs);
 
+	free(txt);
 	amx_Release(m_AMX, amxargs[2]); amx_Release(m_AMX, amxargs[5]);
 
 	Py_RETURN_NONE;
@@ -4489,6 +4489,7 @@ PyObject *sSetPVarString(PyObject *self, PyObject *args)
 
 	_setPVarString(m_AMX, amxargs);
 
+	free(value);
 	amx_Release(m_AMX, amxargs[2]);
 	amx_Release(m_AMX, amxargs[3]);
 
@@ -4600,9 +4601,8 @@ PyObject *sSetPlayerChatBubble(PyObject *self, PyObject *args)
 
 	_setPlayerChatBubble(m_AMX, amxargs);
 
-	//PyMem_Free(txt);
+	free(txt);
 	amx_Release(m_AMX, amxargs[2]);
-	//_del(col);
 	Py_RETURN_NONE;
 }
 // SetPlayerCheckpoint(playerid,Float:x,Float:y,Float:z,Float:size)
@@ -4818,6 +4818,7 @@ PyObject *sSetPlayerObjectMaterialText(PyObject *self, PyObject *args)
 
 	_setPlayerObjectMaterialText(m_AMX, amxargs);
 
+	free(txt);
 	amx_Release(m_AMX, amxargs[3]); amx_Release(m_AMX, amxargs[6]);
 
 	Py_RETURN_NONE;
@@ -5341,6 +5342,10 @@ PyObject *sShowPlayerDialog(PyObject *self, PyObject *args)
 
 	_showPlayerDialog(m_AMX, amxargs);
 
+	free(caption);
+	free(info);
+	free(btn1);
+	free(btn2);
 	amx_Release(m_AMX, amxargs[4]); amx_Release(m_AMX, amxargs[5]); amx_Release(m_AMX, amxargs[6]); amx_Release(m_AMX, amxargs[7]);
 	Py_RETURN_NONE;
 }
@@ -5551,6 +5556,7 @@ PyObject *sTextDrawCreate(PyObject *self, PyObject *args)
 
 	cell ret = _textDrawCreate(m_AMX, amxargs);
 
+	free(txt);
 	amx_Release(m_AMX, amxargs[3]);
 	return Py_BuildValue("i", ret);
 }
@@ -5730,6 +5736,7 @@ PyObject *sTextDrawSetString(PyObject *self, PyObject *args)
 
 	_textDrawSetString(m_AMX, amxargs);
 
+	free(string);
 	amx_Release(m_AMX, amxargs[2]);
 	Py_RETURN_NONE;
 }
@@ -5847,7 +5854,7 @@ PyObject *sUpdate3DTextLabelText(PyObject *self, PyObject *args)
 
 	_update3DTextLabelText(m_AMX, amxargs);
 
-	//_del(col);
+	free(txt);
 	amx_Release(m_AMX, amxargs[3]);
 	Py_RETURN_NONE;
 }
@@ -5872,7 +5879,7 @@ PyObject *sUpdatePlayer3DTextLabelText(PyObject *self, PyObject *args)
 
 	_updatePlayer3DTextLabelText(m_AMX, amxargs);
 
-	//_del(col);
+	free(txt);
 	amx_Release(m_AMX, amxargs[4]);
 	Py_RETURN_NONE;
 }
