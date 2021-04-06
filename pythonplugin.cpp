@@ -142,22 +142,6 @@ PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData)
 
 	m_MainLock = new Mutex(); // initialize main mutex
 
-	// workaround for missing Python symbols in Python C modules
-	#ifndef WIN32
-		// load the Python library (version taken from includes) with RTLD_GLOBAL
-		char libname[32];
-		snprintf(
-			libname,
-			sizeof(libname),
-			"libpython%d.%dm.so.1.0",
-			PY_MAJOR_VERSION,
-			PY_MINOR_VERSION
-		);
-		void *h = dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);
-		if(!h)
-			printf("%s\n", dlerror());
-	#endif
-
 	logprintf("\tPython plugin loaded");
 	return true;
 }
