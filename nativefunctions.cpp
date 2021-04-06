@@ -177,10 +177,16 @@ int _stringToCP1252(PyObject *source, char **destination)
 	if(bytes == NULL)
 		return 0;
 
-	*destination = PyBytes_AsString(bytes);
+	char *buffer = NULL;
+	buffer = PyBytes_AsString(bytes);
 
-	if(*destination == NULL)
+	if(buffer == NULL)
 		return 0;
+
+	Py_ssize_t len = PyBytes_Size(bytes) + 1;
+	*destination = (char *)malloc(len);
+	memcpy(*destination, buffer, len);
+	Py_DECREF(bytes);
 
 	return 1;
 }
@@ -3949,9 +3955,10 @@ PyObject *sPlayerTextDrawSetString(PyObject *self, PyObject *args)
 
 	cell amxargs[4] = { 3 * sizeof(cell), pid, txt, 0 };
 
+	int len = strlen(string) + 1;
 	cell *strstring;
-	amx_Allot(m_AMX, strlen(string) + 1, amxargs + 3, &strstring);
-	amx_SetString(strstring, string, 0, 0, strlen(string) + 1);
+	amx_Allot(m_AMX, len, amxargs + 3, &strstring);
+	amx_SetString(strstring, string, 0, 0, len);
 
 	_playerTextDrawSetString(m_AMX, amxargs);
 
