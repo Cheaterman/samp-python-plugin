@@ -559,21 +559,7 @@ PyMODINIT_FUNC PyInit_samp()
 	_pyInitMacros(samp_mod);
 #endif
 
-	// add the current directory to the module import paths
-	//	char *curpath = Py_GetPath();
-	//	int slen = strlen(curpath);
-	//	char *newpath = (char*)malloc(slen + 5);
-	//	memcpy(newpath, curpath, slen);
-	//#ifdef WIN32
-	//	strncpy(newpath + slen, ";.", 3);
-	//#else
-	//	strncpy(newpath + slen, ":.", 3);
-	//#endif
-	//	PySys_SetPath(newpath);
-	//	free(newpath);
-	
-	// sys.path was overwritten (the paths added by site.py) with the previous code, so use the following:
-	PyRun_SimpleString("import sys; sys.path.append('./gamemodes')");
+	PyRun_SimpleString("import sys; sys.path.append('.'); del sys");
 
 	m_MainLock->Unlock();
 #if ENABLE_MULTITHREAD
