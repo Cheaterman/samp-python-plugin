@@ -18,12 +18,12 @@ else
 endif
 
 
-COMPILE_FLAGS=-c $(flags) -m32 -fPIC -w -DLINUX -I./SDK/amx/ $(shell python-config --embed --cflags)
+COMPILE_FLAGS=-c $(flags) -m32 -fPIC -w -DLINUX -I./SDK/amx/ $(shell py32/bin/python3-config --embed --cflags)
 
 all: $(PROJ_SOURCE) $(OUTFILE)
 
 $(OUTFILE): $(PROJ_FILES)
-	$(GPP) $(flags) -m32 -shared -o $@ *.o $(shell python-config --embed --ldflags)
+	$(GPP) $(flags) -m32 -shared -o $@ *.o $(shell py32/bin/python3-config --embed --ldflags) -Wl,-rpath ${PWD}/py32/lib
 
 $(PROJ_FILES): $(PROJ_SOURCE) $(SDK_FILES)
 	$(GPP) $(COMPILE_FLAGS) *.cpp
