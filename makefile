@@ -11,13 +11,19 @@ SDK_FILES=amxplugin.o
 PROJ_SOURCE=$(wildcard *.cpp)
 PROJ_FILES=$(PROJ_SOURCE:.cpp=.o)
 
+ifeq ($(debug),1)
+    flags=-g
+else
+    flags=-O2
+endif
 
-COMPILE_FLAGS=-c -O3 -m32 -w -DLINUX -I./SDK/amx/ $(shell python-config --includes)
+
+COMPILE_FLAGS=-c $(flags) -m32 -fPIC -w -DLINUX -I./SDK/amx/ $(shell python-config --embed --cflags)
 
 all: $(PROJ_SOURCE) $(OUTFILE)
 
 $(OUTFILE): $(PROJ_FILES)
-	$(GPP) -O3 -m32 -fshort-wchar -shared $(shell python-config --ldflags | sed 's/x86_64/i386/') -o $@ *.o
+	$(GPP) $(flags) -m32 -shared -o $@ *.o $(shell python-config --embed --ldflags)
 
 $(PROJ_FILES): $(PROJ_SOURCE) $(SDK_FILES)
 	$(GPP) $(COMPILE_FLAGS) *.cpp
